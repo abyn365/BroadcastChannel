@@ -673,8 +673,11 @@ article.fade-in-item {
     z-index: 50 !important;
 
     /* Full width, no side borders on edge */
-    width: 100% !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
     min-width: 0 !important;
+    margin-left: calc(50% - 50vw) !important;
+    margin-right: calc(50% - 50vw) !important;
     border-radius: 0 !important;
 
     /* Tighter pill — just enough height */
