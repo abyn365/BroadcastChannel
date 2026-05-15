@@ -388,6 +388,11 @@ function getLinkPreview($: CheerioAPI, message: MessageSelection, options: Index
     else {
       link.prepend(previewImage)
     }
+
+    link.addClass('tgme_widget_message_link_preview--image')
+  }
+  else if (message.find('.link_preview_site_name').length || title || description) {
+    link.addClass('tgme_widget_message_link_preview--text')
   }
 
   return $.html(link)
