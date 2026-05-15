@@ -144,6 +144,7 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       script.src = widgetSrc
       script.setAttribute('data-telegram-discussion', discussion)
       script.setAttribute('data-comments-limit', limit)
+      script.setAttribute('data-colorful', '1')
       if (currentTheme() === 'dark') {
         script.setAttribute('data-dark', '1')
       }
