@@ -19,16 +19,17 @@ const staticProxy = getEnv(import.meta.env, Astro, 'STATIC_PROXY') ?? '/static/'
 const hideDescription = getEnv(import.meta.env, Astro, 'HIDE_DESCRIPTION')
 
 const headerMainClass =
-  'mb-3 flex items-center rounded-[16px] border border-line/70 p-3 font-semibold glass-panel glass-edge'
-const avatarClass = 'block h-10 w-10 rounded-full border-[3px] border-white object-cover shadow-soft'
+  'mb-3 flex items-center rounded-[18px] border border-[var(--border-soft)] px-3 py-3.5 font-semibold glass-panel glass-edge sm:p-3.5'
+const avatarClass = 'block h-10 w-10 rounded-full border-[2.5px] border-white/85 object-cover shadow-soft'
 const titleWrapClass = 'ml-[10px] min-w-0 flex-1 pr-[10px] text-[20px] tracking-tight'
 const titleLinkClass = 'text-heading no-underline hover:text-ink hover:underline'
-const iconNavClass = 'flex items-center gap-[2px]'
-const socialLinkClass = 'group p-1 no-underline'
+const iconNavClass = 'flex items-center gap-[3px]'
+const socialLinkClass =
+  'soft-press group rounded-[8px] border border-transparent p-1.5 no-underline transition-[background-color,border-color] duration-300 hover:border-[var(--border-soft)] hover:bg-[var(--interactive-hover)]'
 const socialIconClass =
   'h-[1em] w-[1em] align-bottom [filter:var(--icon-secondary-filter)] group-hover:[filter:var(--icon-hover-filter)]'
 const introClass =
-  'mb-5 break-words rounded-[16px] border border-line/70 bg-[var(--surface-2)] px-5 py-3 text-[15px] leading-[1.75] text-muted shadow-soft'
+  'mb-5 break-words rounded-[18px] border border-[var(--border-soft)] bg-[var(--surface-2)] px-4 py-3 text-[15px] leading-[1.72] text-muted shadow-soft sm:px-5'
 
 const socialLinks = [
   {

@@ -21,16 +21,16 @@ const hasReactions = Boolean(REACTIONS && post.reactions?.length > 0)
 const hasTags = post.tags.length > 0
 const supportsComments = Boolean(COMMENTS && post.type !== 'service')
 const articleClass =
-  'fade-in-item glass-edge overflow-hidden rounded-[16px] border border-line/70 bg-[var(--surface-1)] shadow-soft transition duration-200 hover:-translate-y-[2px] hover:shadow-[var(--shadow-elevated)]'
+  'fade-in-item glass-edge overflow-hidden rounded-[18px] border border-[var(--border-soft)] bg-[var(--surface-1)] shadow-soft transition duration-300 hover:-translate-y-[2px] hover:shadow-[var(--shadow-elevated)]'
 const timeBoxClass = 'flex items-center leading-none'
 const timeDotClass = 'h-[8px] w-[8px] rounded-full bg-accent'
 const timeTextClass = 'm-0 flex-1 pl-[10px] text-[14px] font-medium text-accent'
 const itemLinkClass = 'text-accent no-underline hover:underline'
-const contentClass = 'px-4 pb-5 pt-4 text-[15px] leading-[1.72] sm:px-5'
+const contentClass = 'px-4 pb-5 pt-4 text-[15px] leading-[1.72] tracking-[0.003em] sm:px-5 sm:text-[15.5px]'
 const reactionBoxClass = 'px-4 pb-4 pt-0 sm:px-5'
 const reactionListClass = 'm-0 flex flex-wrap gap-[6px]'
 const reactionPillClass =
-  'inline-flex items-center gap-1 rounded-full border border-line bg-code py-[3px] pl-[6px] pr-[8px] text-[12px] text-muted'
+  'inline-flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-[var(--surface-2)] py-[3px] pl-[6px] pr-[8px] text-[12px] text-muted'
 const reactionPaidClass = 'border-[rgba(255,196,0,0.35)] bg-[rgba(255,196,0,0.12)] text-[#9a6a00]'
 const reactionEmojiClass = 'inline-flex items-center text-[14px] leading-none'
 const reactionCountClass = 'font-medium opacity-80 [font-variant-numeric:tabular-nums]'
@@ -38,12 +38,13 @@ const tagBoxClass = 'flex flex-wrap items-center gap-2 px-4 text-[14px] leading-
 const tagPaddingClass = supportsComments ? 'pb-4' : 'pb-5'
 const tagStandaloneClass = 'pt-4'
 const tagLinkClass =
-  'inline-block rounded-[4px] border border-line px-[10px] py-[2px] text-muted no-underline hover:border-accent hover:text-accent hover:no-underline'
+  'inline-block rounded-[7px] border border-[var(--border-soft)] px-[10px] py-[2px] text-muted no-underline transition-colors duration-200 hover:border-accent/50 hover:text-accent hover:no-underline'
 const commentsClass =
-  'border-t border-line/80 bg-[linear-gradient(180deg,var(--surface-2),var(--surface-3))] px-4 py-3 sm:px-5'
+  'border-t border-[var(--border-soft)] bg-[linear-gradient(180deg,var(--surface-2),color-mix(in srgb,var(--surface-3) 90%,transparent))] px-3 py-3 sm:px-5'
 const commentsToggleClass =
-  'soft-press inline-flex min-h-9 items-center rounded-[10px] border border-line/70 bg-[var(--surface-3)] px-3 py-1 text-[13px] font-medium text-muted transition-[background-color,color,transform] duration-200 hover:-translate-y-px hover:bg-[var(--interactive-hover)] hover:text-accent'
-const commentsPanelClass = 'rounded-[8px] border border-line/80 bg-[var(--surface-2)] p-2 shadow-soft'
+  'soft-press inline-flex min-h-10 items-center rounded-[11px] border border-[var(--border-soft)] bg-[var(--surface-3)] px-3 py-1.5 text-[13px] font-medium text-muted transition-[background-color,color,transform,border-color] duration-300 hover:-translate-y-px hover:border-accent/25 hover:bg-[var(--interactive-hover)] hover:text-accent'
+const commentsPanelClass =
+  'min-w-0 overflow-hidden rounded-[12px] border border-[var(--border-soft)] bg-[var(--surface-2)] p-2 sm:p-3 shadow-soft'
 const commentsMetaClass = 'mb-2 text-[12px] text-muted'
 const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${tag}`)}`
 ---
@@ -116,6 +117,7 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
                 data-preview-limit="3"
                 data-full-limit="50"
                 data-comments-limit="3"
+                class="min-w-0 [&_*]:max-w-full [&_*]:break-words"
               />
             </div>
           </div>
