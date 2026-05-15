@@ -349,15 +349,27 @@ function getLinkPreview($: CheerioAPI, message: MessageSelection, options: Index
   link.attr('target', '_blank').attr('rel', 'noopener').attr('title', description)
 
   const image = message.find('.link_preview_image')
+  const imageWrap = message.find('.link_preview_image_wrap')
   const previewUrl
     = image.attr('style')?.match(STYLE_URL_REGEX)?.[1]
       || message.find('.link_preview_image_wrap i').attr('style')?.match(STYLE_URL_REGEX)?.[1]
       || message.find('.link_preview_image img').attr('src')
-  const imageSrc = previewUrl ? staticProxy + previewUrl : ''
+      || imageWrap.find('img').attr('src')
 
-  image.replaceWith(
-    `<img class="link_preview_image" alt="${safeTitle}" src="${imageSrc}" width="1200" height="630" loading="${loading}" />`,
-  )
+  if (previewUrl) {
+    const imageSrc = staticProxy + previewUrl
+    const previewImage = `<img class="link_preview_image" alt="${safeTitle}" src="${imageSrc}" width="1200" height="630" loading="${loading}" />`
+
+    if (image.length) {
+      image.replaceWith(previewImage)
+    }
+    else if (imageWrap.length) {
+      imageWrap.empty().append(previewImage)
+    }
+    else {
+      link.prepend(previewImage)
+    }
+  }
 
   return $.html(link)
 }
