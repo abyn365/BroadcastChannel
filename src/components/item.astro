@@ -19,34 +19,36 @@ const timeago = datetime.isBefore(dayjs().subtract(1, 'w')) ? datetime.format('H
 const hasContent = post.content.length > 0
 const hasReactions = Boolean(REACTIONS && post.reactions?.length > 0)
 const hasTags = post.tags.length > 0
-const articleClass = 'transition duration-200'
+const articleClass = 'overflow-hidden rounded-[10px] border border-line bg-surface shadow-soft transition duration-200'
 const timeBoxClass = 'flex items-center leading-none'
 const timeDotClass = 'h-[8px] w-[8px] rounded-full bg-accent'
 const timeTextClass = 'm-0 flex-1 pl-[10px] text-[14px] font-medium text-accent'
 const itemLinkClass = 'text-accent no-underline hover:underline'
-const contentClass = 'ml-[3px] border-l-2 border-line py-[30px] pl-[15px] text-base leading-[1.6] sm:pl-[30px]'
-const reactionBoxClass = 'ml-[3px] border-l-2 border-line pb-6 pl-[15px] pt-[6px] sm:pl-[30px]'
+const contentClass = 'px-4 pb-5 pt-4 text-base leading-[1.65] sm:px-5'
+const reactionBoxClass = 'px-4 pb-4 pt-0 sm:px-5'
 const reactionListClass = 'm-0 flex flex-wrap gap-[6px]'
 const reactionPillClass =
   'inline-flex items-center gap-1 rounded-full border border-line bg-code py-[3px] pl-[6px] pr-[8px] text-[12px] text-muted'
 const reactionPaidClass = 'border-[rgba(255,196,0,0.35)] bg-[rgba(255,196,0,0.12)] text-[#9a6a00]'
 const reactionEmojiClass = 'inline-flex items-center text-[14px] leading-none'
 const reactionCountClass = 'font-medium opacity-80 [font-variant-numeric:tabular-nums]'
-const tagBoxClass =
-  'ml-[3px] flex flex-wrap items-center gap-2 border-l-2 border-line pl-[15px] text-[14px] leading-[1.6] sm:pl-[30px]'
-const tagPaddingClass = COMMENTS && isItem ? 'pb-[30px]' : 'pb-5'
-const tagStandaloneClass = 'pt-[30px]'
+const tagBoxClass = 'flex flex-wrap items-center gap-2 px-4 text-[14px] leading-[1.6] sm:px-5'
+const tagPaddingClass = COMMENTS ? 'pb-4' : 'pb-5'
+const tagStandaloneClass = 'pt-4'
 const tagLinkClass =
   'inline-block rounded-[4px] border border-line px-[10px] py-[2px] text-muted no-underline hover:border-accent hover:text-accent hover:no-underline'
-const commentsClass = 'ml-[3px] border-l-2 border-line pb-6 pl-[15px] pt-[6px] sm:pl-[30px]'
+const commentsClass = 'border-t border-line bg-code/35 px-4 py-3 sm:px-5'
 const commentsToggleClass =
   'inline-flex items-center rounded-panel border border-line bg-code px-3 py-1 text-[14px] text-muted hover:text-accent'
-const commentsPanelClass = 'mt-3 rounded-panel border border-line bg-code/60 p-3'
+const commentsPanelClass = 'mt-2 rounded-panel border border-line bg-surface p-3'
+const commentsPreviewClass = 'rounded-panel border border-line bg-surface p-2'
+const commentsFullLinkClass = 'mt-2 inline-block text-[13px] font-medium text-accent no-underline hover:underline'
+const commentsHintClass = 'mt-2 text-[12px] text-muted'
 const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${tag}`)}`
 ---
 
 <article class={articleClass} style={{ 'view-transition-name': `post-${post.id}` }}>
-  <header class={timeBoxClass}>
+  <header class:list={[timeBoxClass, 'border-b border-line px-4 py-3 sm:px-5']}>
     <span class={timeDotClass} aria-hidden="true"></span>
     <p class={timeTextClass}>
       <a href={`${SITE_URL}posts/${post.id}`} title={post.datetime} class={itemLinkClass}>
@@ -98,14 +100,26 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
   }
 
   {
-    COMMENTS && isItem && (
+    COMMENTS && (
       <section class={commentsClass} aria-label="Comments">
+        <div
+          class={commentsPreviewClass}
+          data-telegram-comments
+          data-discussion={`${channel}/${post.id}`}
+          data-comments-limit="3"
+        />
+        <p class={commentsHintClass}>Reply is available directly inside the Telegram discussion widget.</p>
         <details data-comments>
-          <summary class={commentsToggleClass}>Comments</summary>
+          <summary class={commentsToggleClass}>View all comments</summary>
           <div class={commentsPanelClass}>
             <div data-telegram-comments data-discussion={`${channel}/${post.id}`} data-comments-limit="50" />
           </div>
         </details>
+        {!isItem && (
+          <a class={commentsFullLinkClass} href={`${SITE_URL}posts/${post.id}`}>
+            Open post page
+          </a>
+        )}
       </section>
     )
   }
@@ -136,6 +150,12 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
       target.replaceChildren(script)
     }
+
+    document.querySelectorAll('[data-telegram-comments]').forEach((target) => {
+      if (target instanceof HTMLElement && !target.closest('details')) {
+        renderWidget(target)
+      }
+    })
 
     document.querySelectorAll('details[data-comments]').forEach((details) => {
       const target = details.querySelector('[data-telegram-comments]')
