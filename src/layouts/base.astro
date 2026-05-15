@@ -103,15 +103,16 @@ const asideInnerClass = 'relative overflow-y-visible sm:max-h-[100svh] sm:overfl
 const navListClass = 'm-0 flex list-none flex-wrap gap-[2px] pl-0 pt-5 sm:block'
 const navItemClass = 'flex items-center text-[14px] leading-none sm:mb-[10px] sm:text-base sm:leading-normal'
 const navLinkClass =
-  'flex-1 inline-block rounded-[8px] px-[10px] py-[7px] text-heading no-underline transition-[background-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-px hover:bg-white/65 hover:shadow-soft hover:no-underline'
-const navLinkCurrentClass = 'bg-white/80 shadow-soft'
+  'flex-1 inline-block rounded-[8px] px-[10px] py-[7px] text-heading no-underline transition-[background-color,box-shadow,transform,border-color] duration-200 ease-out hover:-translate-y-px hover:bg-[var(--interactive-hover)] hover:shadow-soft hover:no-underline'
+const navLinkCurrentClass = 'bg-[var(--interactive-active)] shadow-soft'
 const skipLinkClass =
   'pointer-events-none absolute left-5 top-0 z-[1100] -translate-y-full rounded-panel bg-heading px-3 py-2 text-sm text-white no-underline transition-transform duration-150 focus-visible:pointer-events-auto focus-visible:translate-y-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-heading'
 const searchToggleId = 'search-toggle'
 const searchToggleClass = 'peer sr-only sm:hidden'
 const searchToggleLabelClass =
-  'absolute right-0 top-5 inline-flex h-6 w-6 items-center justify-center rounded-panel bg-paper text-base leading-6 text-heading no-underline peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-heading sm:hidden'
-const searchFormClass = 'mt-3 hidden rounded-[8px] bg-code/70 p-2 text-muted peer-checked:block sm:mt-0 sm:block'
+  'absolute right-0 top-5 inline-flex h-6 w-6 items-center justify-center rounded-panel bg-[var(--surface-3)] text-base leading-6 text-heading no-underline transition hover:bg-[var(--interactive-hover)] peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-heading sm:hidden'
+const searchFormClass =
+  'mt-3 hidden rounded-[8px] border border-line/70 bg-[var(--surface-3)] p-2 text-muted peer-checked:block sm:mt-0 sm:block'
 const searchInputClass =
   'box-border w-full rounded-panel border border-paper bg-code px-2 text-[16px] leading-[2.4] text-muted outline-none placeholder:text-muted focus-visible:border-heading focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-heading sm:text-[12px]'
 const footerClass = 'hidden p-2 text-[14px] leading-[1.5] text-footer sm:block'
@@ -121,7 +122,7 @@ const backToTopIconClass = 'h-auto w-auto [filter:var(--icon-secondary-filter)]'
 const skipLinkText = 'Skip to main content'
 const searchLabelText = 'Search'
 const themeToggleClass =
-  'mt-2 inline-flex min-h-9 w-full items-center justify-center rounded-[8px] border border-line bg-code/70 px-2 py-1 text-[14px] text-heading transition hover:-translate-y-px hover:bg-white/65'
+  'mt-2 inline-flex min-h-9 w-full items-center justify-center rounded-[8px] border border-line/70 bg-[var(--surface-3)] px-2 py-1 text-[14px] text-heading transition hover:-translate-y-px hover:bg-[var(--interactive-hover)]'
 ---
 
 <!doctype html>

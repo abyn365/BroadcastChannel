@@ -21,7 +21,7 @@ const hasReactions = Boolean(REACTIONS && post.reactions?.length > 0)
 const hasTags = post.tags.length > 0
 const supportsComments = Boolean(COMMENTS && post.type !== 'service')
 const articleClass =
-  'fade-in-item overflow-hidden rounded-[14px] border border-line/70 bg-surface/95 shadow-soft transition duration-200 hover:-translate-y-[2px] hover:shadow-[var(--shadow-elevated)]'
+  'fade-in-item overflow-hidden rounded-[14px] border border-line/70 bg-[var(--surface-1)] shadow-soft transition duration-200 hover:-translate-y-[2px] hover:shadow-[var(--shadow-elevated)]'
 const timeBoxClass = 'flex items-center leading-none'
 const timeDotClass = 'h-[8px] w-[8px] rounded-full bg-accent'
 const timeTextClass = 'm-0 flex-1 pl-[10px] text-[14px] font-medium text-accent'
@@ -40,10 +40,10 @@ const tagStandaloneClass = 'pt-4'
 const tagLinkClass =
   'inline-block rounded-[4px] border border-line px-[10px] py-[2px] text-muted no-underline hover:border-accent hover:text-accent hover:no-underline'
 const commentsClass =
-  'border-t border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.18),rgba(255,255,255,0.02))] px-4 py-3 sm:px-5'
+  'border-t border-line/80 bg-[linear-gradient(180deg,var(--surface-2),var(--surface-3))] px-4 py-3 sm:px-5'
 const commentsToggleClass =
-  'inline-flex min-h-9 items-center rounded-panel border border-line bg-code px-3 py-1 text-[13px] font-medium text-muted transition hover:text-accent'
-const commentsPanelClass = 'rounded-[8px] border border-line/90 bg-surface/90 p-2 shadow-soft'
+  'inline-flex min-h-9 items-center rounded-panel border border-line/70 bg-[var(--surface-3)] px-3 py-1 text-[13px] font-medium text-muted transition-[background-color,color,transform] duration-200 hover:-translate-y-px hover:bg-[var(--interactive-hover)] hover:text-accent'
+const commentsPanelClass = 'rounded-[8px] border border-line/80 bg-[var(--surface-2)] p-2 shadow-soft'
 const commentsMetaClass = 'mb-2 text-[12px] text-muted'
 const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${tag}`)}`
 ---
