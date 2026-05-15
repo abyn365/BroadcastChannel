@@ -302,5 +302,28 @@ const themeToggleClass =
         })
       })()
     </script>
+    <script is:inline>
+      ;(() => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+        let ticking = false
+        let lastY = 0
+
+        function update() {
+          // Shift the dot grid at ~8% of scroll speed — barely perceptible drift
+          const y = (lastY * 0.08).toFixed(2)
+          document.body.style.setProperty('--grid-y', `${y}px`)
+          ticking = false
+        }
+
+        window.addEventListener('scroll', () => {
+          lastY = window.scrollY
+          if (!ticking) {
+            requestAnimationFrame(update)
+            ticking = true
+          }
+        }, { passive: true })
+      })()
+    </script>
   </body>
 </html>
