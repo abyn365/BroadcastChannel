@@ -111,11 +111,13 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
                 Latest replies preview
               </p>
               <div
-                data-telegram-comments
-                data-discussion={`${channel}/${post.id}`}
-                data-preview-limit="3"
-                data-full-limit="50"
-                data-comments-limit="3"
+                data-comments-app
+                data-comments-app-website="FLEpfHon"
+                data-limit="5"
+                data-color="F95C54"
+                data-dislikes="1"
+                data-outlined="1"
+                data-dark="1"
               />
             </div>
           </div>
@@ -127,60 +129,39 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
 <script is:inline>
   ;(() => {
-    const widgetSrc = 'https://telegram.org/js/telegram-widget.js?23'
+    const widgetSrc = 'https://comments.app/js/widget.js?3'
 
-    function currentTheme() {
-      return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
-    }
-
-    function renderWidget(target, limit) {
-      const discussion = target.dataset.discussion
-      if (!discussion) {
+    function renderWidget(target) {
+      const website = target.dataset.commentsAppWebsite
+      if (!website) {
         return
       }
 
       const script = document.createElement('script')
       script.async = true
       script.src = widgetSrc
-      script.setAttribute('data-telegram-discussion', discussion)
-      script.setAttribute('data-comments-limit', limit)
-      script.setAttribute('data-colorful', '1')
-      if (currentTheme() === 'dark') {
-        script.setAttribute('data-dark', '1')
-      }
+      script.setAttribute('data-comments-app-website', website)
+      script.setAttribute('data-limit', target.dataset.limit || '5')
+      script.setAttribute('data-color', target.dataset.color || 'F95C54')
+      script.setAttribute('data-dislikes', target.dataset.dislikes || '1')
+      script.setAttribute('data-outlined', target.dataset.outlined || '1')
+      script.setAttribute('data-dark', target.dataset.dark || '1')
 
       target.replaceChildren(script)
     }
 
     document.querySelectorAll('details[data-comments]').forEach((details) => {
-      const target = details.querySelector('[data-telegram-comments]')
+      const target = details.querySelector('[data-comments-app]')
       if (!(target instanceof HTMLElement)) {
         return
       }
 
       const meta = details.querySelector('[data-comments-meta]')
-      const previewLimit = target.dataset.previewLimit || '3'
-      const fullLimit = target.dataset.fullLimit || '50'
-
-      renderWidget(target, previewLimit)
+      renderWidget(target)
 
       details.addEventListener('toggle', () => {
-        const nextLimit = details.open ? fullLimit : previewLimit
-        renderWidget(target, nextLimit)
-
         if (meta instanceof HTMLElement) {
           meta.textContent = details.open ? 'Discussion expanded' : 'Latest replies preview'
-        }
-      })
-    })
-
-    window.addEventListener('themechange', () => {
-      document.querySelectorAll('details[data-comments] [data-telegram-comments]').forEach((target) => {
-        if (target instanceof HTMLElement) {
-          const details = target.closest('details[data-comments]')
-          const previewLimit = target.dataset.previewLimit || '3'
-          const fullLimit = target.dataset.fullLimit || '50'
-          renderWidget(target, details?.open ? fullLimit : previewLimit)
         }
       })
     })
