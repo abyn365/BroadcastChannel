@@ -20,6 +20,7 @@ const hasContent = post.content.length > 0
 const hasReactions = Boolean(REACTIONS && post.reactions?.length > 0)
 const hasTags = post.tags.length > 0
 const supportsComments = Boolean(COMMENTS && post.type !== 'service')
+const commentsPeer = COMMENTS && COMMENTS !== 'true' ? COMMENTS.replace(/^@/, '').trim() : channel
 const articleClass =
   'fade-in-item glass-edge overflow-hidden rounded-[16px] border border-line/70 bg-[var(--surface-1)] shadow-soft transition duration-200 hover:-translate-y-[2px] hover:shadow-[var(--shadow-elevated)]'
 const timeBoxClass = 'flex items-center leading-none'
@@ -112,7 +113,7 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
               </p>
               <div
                 data-telegram-comments
-                data-discussion={`${channel}/${post.id}`}
+                data-discussion={`${commentsPeer}/${post.id}`}
                 data-preview-limit="3"
                 data-full-limit="50"
                 data-comments-limit="3"

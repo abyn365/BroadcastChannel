@@ -128,6 +128,8 @@ STATIC_PROXY=
 TAGS=tag1,tag2,tag3
 
 ## Show comments
+## true: use CHANNEL as discussion peer
+## @group_or_channel: use a custom public peer for the Telegram discussion widget
 COMMENTS=true
 
 ## Show reactions
