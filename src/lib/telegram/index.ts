@@ -8,7 +8,7 @@ import { getEnv } from '../env'
 import prism from '../prism'
 import { isStaticProxyWhitelisted, resolveStaticProxyTarget } from '../static-proxy'
 
-const STYLE_URL_REGEX = /url\(["'](.*?)["']/i
+const STYLE_URL_REGEX = /url\((['"]?)(.*?)\1\)/i
 const STYLE_DIMENSION_REGEX = {
   width: /width:\s*(\d+(?:\.\d+)?)px/i,
   height: /height:\s*(\d+(?:\.\d+)?)px/i,
@@ -265,7 +265,7 @@ function getImages($: CheerioAPI, message: MessageSelection, options: MessageAss
   const safeCloseLabel = 'Close image preview'
 
   for (const [photoIndex, photoNode] of message.find('.tgme_widget_message_photo_wrap').toArray().entries()) {
-    const imageUrl = $(photoNode).attr('style')?.match(STYLE_URL_REGEX)?.[1]
+    const imageUrl = $(photoNode).attr('style')?.match(STYLE_URL_REGEX)?.[2]
 
     if (!imageUrl) {
       continue
@@ -370,8 +370,8 @@ function getLinkPreview($: CheerioAPI, message: MessageSelection, options: Index
   const image = message.find('.link_preview_image')
   const imageWrap = message.find('.link_preview_image_wrap')
   const previewUrl
-    = image.attr('style')?.match(STYLE_URL_REGEX)?.[1]
-      || message.find('.link_preview_image_wrap i').attr('style')?.match(STYLE_URL_REGEX)?.[1]
+    = image.attr('style')?.match(STYLE_URL_REGEX)?.[2]
+      || message.find('.link_preview_image_wrap i').attr('style')?.match(STYLE_URL_REGEX)?.[2]
       || message.find('.link_preview_image img').attr('src')
       || imageWrap.find('img').attr('src')
 
