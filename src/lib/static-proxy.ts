@@ -7,10 +7,13 @@ const TARGET_WHITELIST = [
   'telesco.pe',
   'yandex.ru',
 ]
+const MALFORMED_PROTOCOL_REGEX = /^https?:\/(?!\/)/i
 
 export function resolveStaticProxyTarget(rawTarget: string): URL {
-  const normalizedTarget = rawTarget.startsWith('//') ? `https:${rawTarget}` : rawTarget
-  return new URL(normalizedTarget)
+  const normalizedTarget = rawTarget
+    .replace(MALFORMED_PROTOCOL_REGEX, protocol => `${protocol}/`)
+  const resolvedTarget = normalizedTarget.startsWith('//') ? `https:${normalizedTarget}` : normalizedTarget
+  return new URL(resolvedTarget)
 }
 
 export function isStaticProxyWhitelisted(target: URL): boolean {
