@@ -6,6 +6,7 @@ import { LRUCache } from 'lru-cache'
 import { $fetch } from 'ofetch'
 import { getEnv } from '../env'
 import prism from '../prism'
+import { isStaticProxyWhitelisted, resolveStaticProxyTarget } from '../static-proxy'
 
 const STYLE_URL_REGEX = /url\(["'](.*?)["']/i
 const STYLE_DIMENSION_REGEX = {
@@ -123,6 +124,24 @@ function getStylePaddingTop(style: string | undefined): number | null {
 
 function hasSelfOrDescendant(element: Cheerio<AnyNode>, selector: string): boolean {
   return element.is(selector) || element.find(selector).length > 0
+}
+
+function getMediaSrc(rawUrl: string, staticProxy = ''): string {
+  if (!rawUrl) {
+    return ''
+  }
+
+  if (!staticProxy) {
+    return rawUrl
+  }
+
+  try {
+    const target = resolveStaticProxyTarget(rawUrl)
+    return isStaticProxyWhitelisted(target) ? `${staticProxy}${target.toString()}` : target.toString()
+  }
+  catch {
+    return `${staticProxy}${rawUrl}`
+  }
 }
 
 // Telegram widgets encode image ratios in styles, so this returns synthetic
@@ -357,7 +376,7 @@ function getLinkPreview($: CheerioAPI, message: MessageSelection, options: Index
       || imageWrap.find('img').attr('src')
 
   if (previewUrl) {
-    const imageSrc = staticProxy + previewUrl
+    const imageSrc = getMediaSrc(previewUrl, staticProxy)
     const previewImage = `<img class="link_preview_image" alt="${safeTitle}" src="${imageSrc}" width="1200" height="630" loading="${loading}" />`
 
     if (image.length) {
