@@ -680,7 +680,8 @@ article.fade-in-item {
     margin-right: calc(50% - 50vw) !important;
     border-radius: 0 !important;
 
-    /* Tighter pill — just enough height */
+    /* Tighter pill — scales a bit with viewport */
+    min-height: clamp(42px, 9.5vw, 52px) !important;
     padding-block: 0 !important;
 
     /* Stronger glass so content shows behind it */
@@ -718,6 +719,8 @@ article.fade-in-item {
     align-items: center !important;
     gap: 0 !important;
     padding-inline: 6px !important;
+    width: 100% !important;
+    min-width: 0 !important;
 
     /* Subtle scrollbar hide */
     scrollbar-width: none !important;
@@ -732,6 +735,7 @@ article.fade-in-item {
     flex: 1 1 auto;
     min-width: 0;
     width: max-content;
+    max-width: min(62vw, 360px);
   }
 
   /* Nav list: single horizontal row, no wrap */
@@ -802,9 +806,11 @@ article.fade-in-item {
   aside form[role='search'] {
     display: flex !important;
     align-items: center !important;
-    flex: 0 0 auto !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
     margin: 0 !important;
-    padding: 6px 6px 6px 4px !important;
+    padding: 6px 4px 6px 4px !important;
+    max-width: min(34vw, 240px) !important;
     border-left: 1px solid var(--border-soft) !important;
     border-top: none !important;
     border-right: none !important;
@@ -814,7 +820,8 @@ article.fade-in-item {
   }
 
   aside form[role='search'] input[type='search'] {
-    width: 80px !important;
+    width: clamp(112px, 30vw, 220px) !important;
+    max-width: 100% !important;
     height: 30px !important;
     font-size: 12.5px !important;
     padding: 0 10px !important;
@@ -828,7 +835,7 @@ article.fade-in-item {
   }
 
   aside form[role='search'] input[type='search']:focus {
-    width: 130px !important;
+    width: clamp(148px, 42vw, 300px) !important;
     background: var(--surface-0) !important;
     border-color: var(--color-accent) !important;
     box-shadow: 0 0 0 2px var(--focus-ring) !important;
@@ -838,11 +845,11 @@ article.fade-in-item {
   /* ── Theme toggle — icon-only pill ──────────*/
   button[data-theme-toggle] {
     flex: 0 0 auto !important;
-    width: 32px !important;
+    width: clamp(30px, 8.2vw, 36px) !important;
     height: 32px !important;
     min-height: unset !important;
     padding: 0 !important;
-    margin: 0 8px 0 2px !important;
+    margin: 0 6px 0 4px !important;
     border-radius: 99px !important;
     font-size: 0 !important; /* hide text */
     overflow: hidden !important;
