@@ -19,26 +19,28 @@ const timeago = datetime.isBefore(dayjs().subtract(1, 'w')) ? datetime.format('H
 const hasContent = post.content.length > 0
 const hasReactions = Boolean(REACTIONS && post.reactions?.length > 0)
 const hasTags = post.tags.length > 0
-const articleClass = 'transition duration-200'
+const articleClass = 'pb-8 transition duration-200'
 const timeBoxClass = 'flex items-center leading-none'
-const timeDotClass = 'h-[8px] w-[8px] rounded-full bg-accent'
-const timeTextClass = 'm-0 flex-1 pl-[10px] text-[14px] font-medium text-accent'
-const itemLinkClass = 'text-accent no-underline hover:underline'
-const contentClass = 'ml-[3px] border-l-2 border-line py-[30px] pl-[15px] text-base leading-[1.6] sm:pl-[30px]'
-const reactionBoxClass = 'ml-[3px] border-l-2 border-line pb-6 pl-[15px] pt-[6px] sm:pl-[30px]'
-const reactionListClass = 'm-0 flex flex-wrap gap-[6px]'
+const timeDotClass = 'h-[10px] w-[10px] rounded-full border-2 border-paper bg-accent shadow-soft'
+const timeTextClass = 'm-0 flex-1 pl-3 text-[13px] font-semibold text-muted'
+const itemLinkClass = 'text-accent no-underline hover:text-link hover:underline'
+const contentClass =
+  'mt-3 ml-[4px] rounded-r-[14px] border border-line border-l-[3px] border-l-accent bg-surface px-4 py-5 text-[15px] leading-[1.7] shadow-soft sm:px-6'
+const reactionBoxClass = 'mt-3 ml-[4px] rounded-r-[14px] border border-line bg-surface-2 px-4 py-3 sm:px-6'
+const reactionListClass = 'm-0 flex flex-wrap gap-2'
 const reactionPillClass =
-  'inline-flex items-center gap-1 rounded-full border border-line bg-code py-[3px] pl-[6px] pr-[8px] text-[12px] text-muted'
-const reactionPaidClass = 'border-[rgba(255,196,0,0.35)] bg-[rgba(255,196,0,0.12)] text-[#9a6a00]'
+  'inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2 py-1 text-[12px] text-muted shadow-[0_1px_1px_rgba(15,23,42,0.08)]'
+const reactionPaidClass =
+  '[border-color:var(--color-reaction-paid-border)] [background-color:var(--color-reaction-paid-bg)] [color:var(--color-reaction-paid-text)]'
 const reactionEmojiClass = 'inline-flex items-center text-[14px] leading-none'
-const reactionCountClass = 'font-medium opacity-80 [font-variant-numeric:tabular-nums]'
+const reactionCountClass = 'font-medium [font-variant-numeric:tabular-nums]'
 const tagBoxClass =
-  'ml-[3px] flex flex-wrap items-center gap-2 border-l-2 border-line pl-[15px] text-[14px] leading-[1.6] sm:pl-[30px]'
-const tagPaddingClass = COMMENTS && isItem ? 'pb-[30px]' : 'pb-5'
-const tagStandaloneClass = 'pt-[30px]'
+  'mt-3 ml-[4px] flex flex-wrap items-center gap-2 rounded-r-[14px] border border-line bg-surface px-4 text-[13px] leading-[1.6] sm:px-6'
+const tagPaddingClass = COMMENTS && isItem ? 'pb-4 pt-3' : 'py-3'
+const tagStandaloneClass = 'mt-0'
 const tagLinkClass =
-  'inline-block rounded-[4px] border border-line px-[10px] py-[2px] text-muted no-underline hover:border-accent hover:text-accent hover:no-underline'
-const commentsClass = 'ml-[3px] border-l-2 border-line pb-6 pl-[15px] pt-[6px] sm:pl-[30px]'
+  'inline-flex items-center rounded-full border border-line bg-surface-2 px-2.5 py-1 text-muted no-underline transition-colors duration-150 hover:border-link hover:text-link hover:no-underline'
+const commentsClass = 'mt-3 ml-[4px] rounded-r-[14px] border border-line bg-surface px-4 py-4 shadow-soft sm:px-6'
 const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${tag}`)}`
 ---
 
@@ -54,7 +56,7 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
   {hasContent && <div class:list={[contentClass, 'content']} set:html={post.content} />}
   {
     hasReactions && (
-      <div class:list={[reactionBoxClass, hasContent && '-mt-3 pt-0']}>
+      <div class={reactionBoxClass}>
         <div class={reactionListClass}>
           {post.reactions.map((reaction) => (
             <span class:list={[reactionPillClass, reaction.isPaid && reactionPaidClass]}>

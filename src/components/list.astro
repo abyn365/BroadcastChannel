@@ -9,13 +9,12 @@ const posts = channel.posts ?? []
 
 const beforeCursor = posts[posts.length - 1]?.id
 const afterCursor = posts[0]?.id
-const itemsClass = 'mt-5 mb-0 ml-7 list-none pl-0 max-sm:ml-0'
-const paginationClass = 'my-5 flex items-center'
+const itemsClass = 'mt-6 mb-0 list-none pl-0'
+const paginationClass = 'my-8 flex items-center gap-3 rounded-[14px] border border-line bg-surface px-3 py-3 shadow-soft'
 const paginationLinkClass =
-  'inline-flex min-h-9 items-center justify-center rounded-[30px] border border-muted px-[15px] py-[5px] text-[14px] font-medium text-muted no-underline hover:text-accent hover:no-underline active:bg-line'
-const paginationInfoClass = 'flex-1 text-center align-middle text-[12px] font-medium text-muted'
-const paginationPlaceholderClass = 'inline-block w-[34px]'
-// const cursor = +Astro.params.cursor
+  'inline-flex min-h-9 min-w-[86px] items-center justify-center rounded-full border border-line bg-surface-2 px-4 py-[7px] text-[13px] font-semibold text-heading no-underline transition-colors duration-150 hover:border-link hover:text-link hover:no-underline active:bg-paper'
+const paginationInfoClass = 'flex-1 text-center text-[11px] font-medium uppercase tracking-[0.08em] text-muted'
+const paginationPlaceholderClass = 'inline-block min-w-[86px]'
 ---
 
 <Layout channel={channel}>
@@ -46,7 +45,7 @@ const paginationPlaceholderClass = 'inline-block w-[34px]'
       )
     }
 
-    <div class={paginationInfoClass}></div>
+    <div class={paginationInfoClass}>Page navigation</div>
     {
       after && afterCursor ? (
         <a href={`${SITE_URL}after/${afterCursor}`} title="After" class={paginationLinkClass}>

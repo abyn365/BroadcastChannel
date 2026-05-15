@@ -2,6 +2,7 @@
 
 @layer components {
   .content {
+    color: var(--color-ink);
     word-break: break-word;
 
     p {
@@ -117,11 +118,12 @@
     pre {
       font-size: 0.9em;
       white-space: pre-wrap;
-      padding: 10px;
+      padding: 12px;
       border-radius: var(--radius-media);
       border: 1px solid var(--color-line);
       box-shadow: var(--shadow-soft);
-      background-color: rgba(255, 255, 240, 0.2);
+      background-color: var(--color-code);
+      color: var(--color-ink);
     }
 
     > pre {
@@ -132,6 +134,33 @@
 
     code {
       line-break: anywhere;
+    }
+
+    :not(pre) > code {
+      border-radius: 6px;
+      border: 1px solid var(--color-line);
+      background: var(--color-code);
+      padding: 0.1em 0.35em;
+      font-size: 0.92em;
+    }
+
+    pre[class*='language-'],
+    code[class*='language-'] {
+      color: var(--color-ink);
+      text-shadow: none;
+      background: transparent;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    }
+
+    pre[class*='language-'] {
+      background: var(--color-code) !important;
+    }
+
+    .token.comment,
+    .token.prolog,
+    .token.doctype,
+    .token.cdata {
+      color: color-mix(in srgb, var(--color-muted) 90%, var(--color-ink));
     }
 
     figure {
@@ -167,7 +196,7 @@
     }
 
     table tr:nth-child(2n) {
-      background-color: var(--color-code);
+      background-color: var(--color-surface-2);
     }
 
     table tr th {
@@ -175,7 +204,7 @@
       border: 1px solid var(--color-line);
       margin: 0;
       padding: 6px 12px;
-      background-color: var(--color-code);
+      background-color: var(--color-surface-2);
     }
 
     table tr td {
@@ -263,10 +292,11 @@
 
     .tgme_widget_message_link_preview:has(.link_preview_site_name) {
       display: block;
-      background: var(--color-surface);
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-line);
       border-left: 3px solid var(--color-accent);
-      padding: 6px;
-      padding-left: 10px;
+      padding: 8px;
+      padding-left: 12px;
       border-radius: var(--radius-panel);
 
       .link_preview_title {
@@ -307,9 +337,9 @@
         left: var(--box-margin);
         padding-left: 4px;
         padding-right: 4px;
-        background-color: rgba(0, 0, 0, 0.66);
+        background-color: var(--color-modal-button-bg);
         font-size: 14px;
-        color: #fff;
+        color: var(--color-modal-button-text);
         line-height: 1.5;
         border-radius: var(--radius-panel);
         text-overflow: ellipsis;
@@ -326,21 +356,23 @@
 
     blockquote {
       margin: 16px 0;
-      font-size: 0.8em;
-      background: var(--color-surface);
+      font-size: 0.9em;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-line);
       border-left: 3px solid var(--color-accent);
-      padding: 6px;
-      padding-left: 10px;
+      padding: 8px;
+      padding-left: 12px;
       border-radius: var(--radius-panel);
     }
 
     .tg-expandable {
       margin: 16px 0;
-      font-size: 0.8em;
-      background: var(--color-surface);
+      font-size: 0.9em;
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-line);
       border-left: 3px solid var(--color-accent);
-      padding: 6px;
-      padding-left: 10px;
+      padding: 8px;
+      padding-left: 12px;
       padding-right: 30px;
       border-radius: var(--radius-panel);
       position: relative;
@@ -505,8 +537,8 @@
         color: transparent;
         margin: auto 2px;
         border-radius: var(--radius-panel);
-        background: #ccc 60% 60% / 3000px 3000px;
-        background-image: repeating-conic-gradient(#999 0 0.0001%, #0000 0 0.0002%);
+        background: var(--color-spoiler-bg) 60% 60% / 3000px 3000px;
+        background-image: repeating-conic-gradient(var(--color-spoiler-pattern) 0 0.0001%, #0000 0 0.0002%);
       }
 
       input:checked + tg-spoiler {
@@ -562,7 +594,7 @@
       width: 100vw;
       height: 100dvh;
       padding: 20px;
-      background-color: rgba(0, 0, 0, 0.8);
+      background-color: var(--color-modal-overlay);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       overscroll-behavior: contain;
@@ -611,10 +643,10 @@
       justify-content: center;
       width: 40px;
       height: 40px;
-      border: none;
+      border: 1px solid var(--color-line);
       border-radius: 9999px;
-      background: rgba(0, 0, 0, 0.72);
-      color: #fff;
+      background: var(--color-modal-button-bg);
+      color: var(--color-modal-button-text);
       font-size: 24px;
       line-height: 1;
       cursor: pointer;
@@ -622,7 +654,7 @@
     }
 
     .modal__close:hover {
-      background: rgba(0, 0, 0, 0.86);
+      background: var(--color-modal-button-hover-bg);
     }
 
     .modal-img {

@@ -2,7 +2,8 @@ import type { APIRoute } from 'astro'
 import { getEnv } from '../lib/env'
 import { getChannelInfo } from '../lib/telegram'
 
-const MANIFEST_THEME_COLOR = '#f4f1ec'
+const MANIFEST_THEME_COLOR = '#f6f7fb'
+const MANIFEST_BACKGROUND_COLOR = '#f6f7fb'
 const FALLBACK_MANIFEST_NAME = 'BroadcastChannel'
 
 export const GET: APIRoute = async (context) => {
@@ -46,7 +47,7 @@ export const GET: APIRoute = async (context) => {
           },
         ],
     theme_color: MANIFEST_THEME_COLOR,
-    background_color: MANIFEST_THEME_COLOR,
+    background_color: MANIFEST_BACKGROUND_COLOR,
     display: 'standalone',
   }
 

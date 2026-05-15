@@ -10,32 +10,101 @@
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --breakpoint-sm: 37.5rem;
-  --color-paper: #f4f1ec;
-  --color-ink: #000000;
-  --color-heading: #333333;
-  --color-accent: #b23b00;
+  --color-paper: #f6f7fb;
+  --color-ink: #111827;
+  --color-heading: #0f172a;
+  --color-accent: #2563eb;
   --color-surface: #ffffff;
-  --color-code: #f9f9f9;
-  --color-muted: #706862;
-  --color-link: #5a6570;
-  --color-link-hover: #3f4850;
-  --color-line: rgba(0, 0, 0, 0.05);
-  --color-footer: #666666;
-  --shadow-soft:
-    0 1px 2px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02), 0 4px 8px rgba(0, 0, 0, 0.02),
-    0 8px 16px rgba(0, 0, 0, 0.02);
-  --radius-panel: 3px;
-  --radius-media: 8px;
+  --color-surface-2: #eef2f9;
+  --color-code: #edf2fa;
+  --color-muted: #5b667b;
+  --color-link: #1d4ed8;
+  --color-link-hover: #1e40af;
+  --color-line: rgba(15, 23, 42, 0.12);
+  --color-footer: #6c7688;
+  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 14px rgba(15, 23, 42, 0.06);
+  --shadow-lift: 0 12px 30px rgba(15, 23, 42, 0.14);
+  --radius-panel: 10px;
+  --radius-media: 14px;
 }
 
 @layer base {
   :root {
-    --box-margin: 10px;
+    --box-margin: 12px;
     --back-to-top-offset: 1.25rem;
-    --back-to-top-size: 2rem;
+    --back-to-top-size: 2.25rem;
     --dot-size: 8px;
-    --icon-hover-filter: invert(51%) sepia(0%) saturate(0%) hue-rotate(23deg) brightness(90%) contrast(90%);
-    --icon-secondary-filter: invert(97%) sepia(0%) saturate(0%) hue-rotate(129deg) brightness(86%) contrast(88%);
+    --theme-color-light: #f6f7fb;
+    --theme-color-dark: #0f172a;
+    --icon-hover-filter: invert(31%) sepia(38%) saturate(553%) hue-rotate(184deg) brightness(95%) contrast(86%);
+    --icon-secondary-filter: invert(18%) sepia(18%) saturate(556%) hue-rotate(183deg) brightness(92%) contrast(84%);
+    --color-modal-overlay: rgba(15, 23, 42, 0.72);
+    --color-modal-button-bg: rgba(15, 23, 42, 0.74);
+    --color-modal-button-hover-bg: rgba(15, 23, 42, 0.9);
+    --color-modal-button-text: #f8fafc;
+    --color-spoiler-bg: #d4dbe8;
+    --color-spoiler-pattern: #94a1b3;
+    --color-reaction-paid-border: rgba(233, 179, 8, 0.45);
+    --color-reaction-paid-bg: rgba(245, 204, 76, 0.22);
+    --color-reaction-paid-text: #8a5d00;
+  }
+
+  :root[data-theme='dark'] {
+    --color-paper: #0f172a;
+    --color-ink: #e2e8f0;
+    --color-heading: #f8fafc;
+    --color-accent: #7cb4ff;
+    --color-surface: #111b2e;
+    --color-surface-2: #182237;
+    --color-code: #1a2439;
+    --color-muted: #9eadc5;
+    --color-link: #93c5fd;
+    --color-link-hover: #bfdbfe;
+    --color-line: rgba(148, 163, 184, 0.3);
+    --color-footer: #97a8c1;
+    --shadow-soft: 0 1px 2px rgba(2, 6, 23, 0.5), 0 8px 20px rgba(2, 6, 23, 0.35);
+    --shadow-lift: 0 15px 40px rgba(2, 6, 23, 0.55);
+    --icon-hover-filter: invert(84%) sepia(9%) saturate(741%) hue-rotate(185deg) brightness(98%) contrast(93%);
+    --icon-secondary-filter: invert(72%) sepia(17%) saturate(355%) hue-rotate(184deg) brightness(94%) contrast(89%);
+    --color-modal-overlay: rgba(2, 6, 23, 0.82);
+    --color-modal-button-bg: rgba(15, 23, 42, 0.84);
+    --color-modal-button-hover-bg: rgba(30, 41, 59, 0.96);
+    --color-modal-button-text: #e2e8f0;
+    --color-spoiler-bg: #334155;
+    --color-spoiler-pattern: #64748b;
+    --color-reaction-paid-border: rgba(245, 196, 67, 0.45);
+    --color-reaction-paid-bg: rgba(245, 196, 67, 0.18);
+    --color-reaction-paid-text: #fcd774;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --color-paper: #0f172a;
+      --color-ink: #e2e8f0;
+      --color-heading: #f8fafc;
+      --color-accent: #7cb4ff;
+      --color-surface: #111b2e;
+      --color-surface-2: #182237;
+      --color-code: #1a2439;
+      --color-muted: #9eadc5;
+      --color-link: #93c5fd;
+      --color-link-hover: #bfdbfe;
+      --color-line: rgba(148, 163, 184, 0.3);
+      --color-footer: #97a8c1;
+      --shadow-soft: 0 1px 2px rgba(2, 6, 23, 0.5), 0 8px 20px rgba(2, 6, 23, 0.35);
+      --shadow-lift: 0 15px 40px rgba(2, 6, 23, 0.55);
+      --icon-hover-filter: invert(84%) sepia(9%) saturate(741%) hue-rotate(185deg) brightness(98%) contrast(93%);
+      --icon-secondary-filter: invert(72%) sepia(17%) saturate(355%) hue-rotate(184deg) brightness(94%) contrast(89%);
+      --color-modal-overlay: rgba(2, 6, 23, 0.82);
+      --color-modal-button-bg: rgba(15, 23, 42, 0.84);
+      --color-modal-button-hover-bg: rgba(30, 41, 59, 0.96);
+      --color-modal-button-text: #e2e8f0;
+      --color-spoiler-bg: #334155;
+      --color-spoiler-pattern: #64748b;
+      --color-reaction-paid-border: rgba(245, 196, 67, 0.45);
+      --color-reaction-paid-bg: rgba(245, 196, 67, 0.18);
+      --color-reaction-paid-text: #fcd774;
+    }
   }
 
   * {
@@ -43,14 +112,41 @@
   }
 
   html {
-    color-scheme: light;
+    color-scheme: light dark;
     scroll-behavior: smooth;
   }
 
+  html[data-theme='light'] {
+    color-scheme: light;
+  }
+
+  html[data-theme='dark'] {
+    color-scheme: dark;
+  }
+
   body {
+    margin: 0;
     background-color: var(--color-paper);
     color: var(--color-ink);
     font-family: var(--font-sans);
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+  }
+
+  body,
+  main,
+  aside,
+  article,
+  section,
+  nav,
+  footer,
+  input,
+  button {
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
   img {
@@ -80,7 +176,7 @@
 
   hr {
     border: none;
-    height: 2px;
+    height: 1px;
     color: var(--color-line);
     background-color: var(--color-line);
     margin-top: 2rem;
@@ -108,9 +204,10 @@
     width: 16px;
     height: 16px;
     background-size: 16px 16px;
-    opacity: 0.25;
+    opacity: 0.33;
     background-image: url('../assets/tags.png');
     background-repeat: no-repeat;
+    filter: var(--icon-secondary-filter);
     display: inline-block;
   }
 

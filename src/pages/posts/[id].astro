@@ -22,11 +22,11 @@ const channel = {
 }
 
 const staticProxy = getEnv(import.meta.env, Astro, 'STATIC_PROXY') ?? '/static/'
-const breadcrumbClass = 'mb-5 py-[10px] font-semibold'
+const breadcrumbClass = 'mb-6 rounded-[14px] border border-line bg-surface px-4 py-3 shadow-soft'
 const breadcrumbListClass = 'm-0 flex list-none items-center p-0'
-const breadcrumbLinkClass = 'inline-flex items-center no-underline'
-const breadcrumbAvatarClass = 'block h-5 w-5 rounded-full border-2 border-white object-cover shadow-soft'
-const breadcrumbTitleClass = 'ml-[10px] flex-1 text-[14px] text-heading'
+const breadcrumbLinkClass = 'inline-flex min-w-0 items-center no-underline hover:no-underline'
+const breadcrumbAvatarClass = 'block h-7 w-7 rounded-full border border-line bg-surface-2 object-cover shadow-soft'
+const breadcrumbTitleClass = 'ml-3 flex-1 truncate text-[14px] font-semibold text-heading'
 ---
 
 <List channel={channel} before={false} after={false} isItem={true} pageHeading={post.title || channel.title}>
@@ -38,8 +38,8 @@ const breadcrumbTitleClass = 'ml-[10px] flex-1 text-[14px] text-heading'
             src={channel?.avatar?.startsWith('http') ? staticProxy + channel?.avatar : voidFile.src}
             alt={channel?.title}
             loading="eager"
-            width="20"
-            height="20"
+            width="28"
+            height="28"
             class={breadcrumbAvatarClass}
           />
           <span class={breadcrumbTitleClass} style={siteTitleStyle}>{channel.title}</span>

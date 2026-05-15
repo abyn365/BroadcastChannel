@@ -3,6 +3,7 @@ import '../styles/app.css'
 import { SEO } from 'astro-seo'
 import { getEnv } from '../lib/env'
 import backToTopIcon from '../assets/back-to-top.svg'
+import ThemeToggle from '../components/ThemeToggle.astro'
 import type { NavItem } from '../types'
 
 const { SITE_URL, RSS_URL, RSS_PREFIX } = Astro.locals
@@ -30,11 +31,12 @@ const twitter = getEnv(import.meta.env, Astro, 'TWITTER')
 const pageTitle = seo?.title?.trim()
 const siteTitle = channel?.title ?? ''
 const seoDescription = seo?.text ?? channel?.description
-const shareImage = channel?.avatar
-  ? `https://wsrv.nl/?w=1200&h=630&fit=cover&url=ssl:${channel.avatar.replace(/^https?:\/\//, '')}`
+const avatarWithoutProtocol = (channel?.avatar || '').replace('https://', '').replace('http://', '')
+const shareImage = avatarWithoutProtocol
+  ? `https://wsrv.nl/?w=1200&h=630&fit=cover&url=ssl:${avatarWithoutProtocol}`
   : new URL('favicon.ico', absoluteSiteUrl).toString()
-const favicon = channel?.avatar
-  ? `https://wsrv.nl/?w=64&h=64&fit=cover&mask=circle&url=ssl:${channel.avatar.replace(/^https?:\/\//, '')}`
+const favicon = avatarWithoutProtocol
+  ? `https://wsrv.nl/?w=64&h=64&fit=cover&mask=circle&url=ssl:${avatarWithoutProtocol}`
   : new URL('favicon.svg', absoluteSiteUrl).toString()
 const hasCustomTitle = Boolean(pageTitle && pageTitle !== siteTitle)
 const isArticle = /\/posts\/[^/]+$/.test(pathname)
@@ -95,29 +97,35 @@ const navs: NavItem[] = (getEnv(import.meta.env, Astro, 'NAVS') || '')
     }
   })
 
-const layoutShellClass = 'mx-5'
-const layoutGridClass = 'mx-auto flex w-full max-w-[800px] flex-col-reverse sm:flex-row sm:items-start'
-const mainPanelClass = 'w-full min-w-0 pb-5 pt-[10px] sm:mr-5 sm:flex-1 sm:border-r sm:border-line sm:pr-[30px] sm:pt-5'
+const lightThemeColor = '#f6f7fb'
+const layoutShellClass = 'mx-4 sm:mx-6'
+const layoutGridClass =
+  'mx-auto flex w-full max-w-[980px] flex-col-reverse gap-5 pb-6 sm:flex-row sm:items-start sm:gap-7'
+const mainPanelClass =
+  'w-full min-w-0 rounded-[20px] border border-line bg-surface px-4 py-4 shadow-soft sm:flex-1 sm:px-7 sm:py-6'
 const asidePanelClass =
-  'sticky top-0 w-full min-w-0 border-b border-line bg-paper pb-[10px] shadow-[0_4px_16px_-16px_rgba(0,0,0,0.1)] sm:w-[200px] sm:min-w-[200px] sm:self-start sm:border-b-0 sm:bg-transparent sm:pb-5 sm:shadow-none'
-const asideInnerClass = 'relative overflow-y-visible sm:max-h-[100svh] sm:overflow-y-auto'
-const navListClass = 'm-0 flex list-none flex-wrap gap-[2px] pl-0 pt-5 sm:block'
-const navItemClass = 'flex items-center text-[14px] leading-none sm:mb-[10px] sm:text-base sm:leading-normal'
+  'sticky top-0 z-20 w-full min-w-0 border-b border-line bg-paper py-3 backdrop-blur sm:w-[230px] sm:min-w-[230px] sm:self-start sm:border-b-0 sm:bg-transparent sm:py-6 sm:backdrop-blur-none'
+const asideInnerClass =
+  'relative rounded-[16px] border border-line bg-surface px-3 py-3 shadow-soft sm:max-h-[calc(100svh-3rem)] sm:overflow-y-auto'
+const navListClass = 'm-0 flex list-none flex-wrap gap-2 border-b border-line pb-3 pl-0 sm:block sm:space-y-2'
+const navItemClass =
+  'flex min-w-[calc(50%-0.25rem)] items-center text-[14px] leading-none sm:min-w-0 sm:text-[15px] sm:leading-normal'
 const navLinkClass =
-  'flex-1 inline-block rounded-panel px-[10px] py-[5px] text-heading no-underline transition-[background-color,box-shadow] duration-150 ease-in-out hover:bg-white/65 hover:shadow-soft hover:no-underline'
-const navLinkCurrentClass = 'bg-white/75 shadow-soft'
+  'inline-flex w-full items-center rounded-panel px-3 py-2 text-heading no-underline transition-colors duration-150 hover:bg-surface-2 hover:text-ink hover:no-underline'
+const navLinkCurrentClass = 'bg-surface-2 text-ink shadow-soft'
 const skipLinkClass =
-  'pointer-events-none absolute left-5 top-0 z-[1100] -translate-y-full rounded-panel bg-heading px-3 py-2 text-sm text-white no-underline transition-transform duration-150 focus-visible:pointer-events-auto focus-visible:translate-y-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-heading'
+  'pointer-events-none absolute left-4 top-0 z-[1100] -translate-y-full rounded-panel bg-heading px-3 py-2 text-sm text-paper no-underline transition-transform duration-150 focus-visible:pointer-events-auto focus-visible:translate-y-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-heading'
 const searchToggleId = 'search-toggle'
 const searchToggleClass = 'peer sr-only sm:hidden'
 const searchToggleLabelClass =
-  'absolute right-0 top-5 inline-flex h-6 w-6 items-center justify-center rounded-panel bg-paper text-base leading-6 text-heading no-underline peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-heading sm:hidden'
-const searchFormClass = 'mt-3 hidden rounded-panel bg-code p-2 text-muted peer-checked:block sm:mt-0 sm:block'
+  'absolute right-6 top-3 inline-flex h-8 w-8 items-center justify-center rounded-panel border border-line bg-surface text-base leading-6 text-heading shadow-soft peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-heading sm:hidden'
+const searchFormClass =
+  'mt-3 hidden rounded-panel border border-line bg-surface-2 p-2 text-muted peer-checked:block sm:mt-4 sm:block'
 const searchInputClass =
-  'box-border w-full rounded-panel border border-paper bg-code px-2 text-[16px] leading-[2.4] text-muted outline-none placeholder:text-muted focus-visible:border-heading focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-heading sm:text-[12px]'
-const footerClass = 'hidden p-2 text-[14px] leading-[1.5] text-footer sm:block'
+  'box-border w-full rounded-panel border border-line bg-surface px-3 py-2 text-[16px] leading-[1.4] text-ink outline-none placeholder:text-muted focus-visible:border-link focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-heading sm:text-[13px]'
+const footerClass = 'mt-4 border-t border-line pt-3 text-[12px] leading-[1.6] text-footer'
 const backToTopClass =
-  'pointer-events-auto z-[1000] flex h-8 w-8 items-center justify-center rounded-full bg-code text-[24px] opacity-90 transition-transform duration-300 hover:-translate-y-[3px] active:translate-y-px'
+  'pointer-events-auto z-[1000] flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-[24px] shadow-soft transition-transform duration-300 hover:-translate-y-[3px] active:translate-y-px'
 const backToTopIconClass = 'h-auto w-auto [filter:var(--icon-secondary-filter)]'
 const skipLinkText = 'Skip to main content'
 const searchLabelText = 'Search'
@@ -128,7 +136,40 @@ const searchLabelText = 'Search'
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f4f1ec" />
+    <meta name="theme-color" content={lightThemeColor} />
+    <script is:inline>
+      ;(() => {
+        const storageKey = 'broadcastchannel-theme'
+        const root = document.documentElement
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+        const themeColors = {
+          light: '#f6f7fb',
+          dark: '#0f172a',
+        }
+        const getStoredPreference = () => {
+          try {
+            const value = localStorage.getItem(storageKey)
+            return value === 'light' || value === 'dark' || value === 'system' ? value : 'system'
+          }
+ catch {
+            return 'system'
+          }
+        }
+        const preference = getStoredPreference()
+        const resolvedTheme = preference === 'system' ? (mediaQuery.matches ? 'dark' : 'light') : preference
+        root.dataset.themePreference = preference
+        root.dataset.theme = resolvedTheme
+        root.style.colorScheme = resolvedTheme
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColors[resolvedTheme])
+      })()
+ </script>
+    <noscript>
+      <style>
+        [data-theme-toggle] {
+          display: none !important;
+        }
+      </style>
+    </noscript>
     <link rel="alternate" type="application/rss+xml" title={`${RSS_PREFIX}${channel?.title}`} href={RSS_URL} />
     <SEO
       titleTemplate={hasCustomTitle ? `%s | ${siteTitle}` : undefined}
@@ -152,6 +193,8 @@ const searchLabelText = 'Search'
         <aside class={asidePanelClass}>
           <slot name="aside">
             <div class={asideInnerClass}>
+              <ThemeToggle />
+
               <nav aria-label="Primary navigation">
                 <ul class={navListClass}>
                   <li class={navItemClass}>
@@ -239,7 +282,8 @@ const searchLabelText = 'Search'
                   rel="noopener noreferrer"
                 >
                   BroadcastChannel
-                </a> &
+                </a>
+                &
                 <a
                   href="https://github.com/Planetable/SiteTemplateSepia"
                   title="Sepia"
@@ -259,6 +303,79 @@ const searchLabelText = 'Search'
         </a>
       </div>
     </main>
+    <script is:inline>
+      ;(() => {
+        const storageKey = 'broadcastchannel-theme'
+        const root = document.documentElement
+        const button = document.querySelector('[data-theme-toggle]')
+        const label = document.querySelector('[data-theme-toggle-label]')
+        const icon = document.querySelector('[data-theme-toggle-icon]')
+
+        if (!button || !label || !icon) {
+          return
+        }
+
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+        const themeColors = {
+          light: '#f6f7fb',
+          dark: '#0f172a',
+        }
+
+        const getStoredPreference = () => {
+          try {
+            const value = localStorage.getItem(storageKey)
+            return value === 'light' || value === 'dark' || value === 'system' ? value : 'system'
+          }
+          catch {
+            return 'system'
+          }
+        }
+
+        const savePreference = (value) => {
+          try {
+            localStorage.setItem(storageKey, value)
+          }
+          catch {}
+        }
+
+        const getSystemTheme = () => (mediaQuery.matches ? 'dark' : 'light')
+
+        const applyTheme = (preference) => {
+          const resolvedTheme = preference === 'system' ? getSystemTheme() : preference
+          root.dataset.themePreference = preference
+          root.dataset.theme = resolvedTheme
+          root.style.colorScheme = resolvedTheme
+          themeColorMeta?.setAttribute('content', themeColors[resolvedTheme])
+          button.setAttribute('aria-checked', String(resolvedTheme === 'dark'))
+          button.setAttribute('aria-label', resolvedTheme === 'dark' ? 'Disable dark theme' : 'Enable dark theme')
+          label.textContent = `Theme: ${resolvedTheme === 'dark' ? 'Dark' : 'Light'}`
+          icon.textContent = resolvedTheme === 'dark' ? '🌙' : '🌤️'
+        }
+
+        applyTheme(getStoredPreference())
+
+        button.addEventListener('click', () => {
+          const currentTheme = root.dataset.theme === 'dark' ? 'dark' : 'light'
+          const nextPreference = currentTheme === 'dark' ? 'light' : 'dark'
+          savePreference(nextPreference)
+          applyTheme(nextPreference)
+        })
+
+        const handlePreferenceChange = () => {
+          if (getStoredPreference() === 'system') {
+            applyTheme('system')
+          }
+        }
+
+        if (typeof mediaQuery.addEventListener === 'function') {
+          mediaQuery.addEventListener('change', handlePreferenceChange)
+        }
+        else if (typeof mediaQuery.addListener === 'function') {
+          mediaQuery.addListener(handlePreferenceChange)
+        }
+      })()
+    </script>
     <Fragment set:html={FOOTER_INJECT} />
   </body>
 </html>

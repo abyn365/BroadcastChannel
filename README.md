@@ -10,8 +10,11 @@ English | [简体中文](./README.zh-cn.md)
 
 - **Turn your Telegram Channel into a MicroBlog**
 - **SEO friendly** `/sitemap.xml`
-- **0 JS on the browser side**
+- **Light/Dark theme toggle** with saved preference + system fallback
+- **Minimal browser JS only** (theme preference and optional Telegram comments widget)
 - **RSS and RSS JSON** `/rss.xml` `/rss.json`
+
+> Note: `site.webmanifest` colors are static at install time; browser theme color still updates at runtime when users toggle theme.
 
 ## 🪧 Demo
 

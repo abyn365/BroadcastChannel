@@ -11,15 +11,16 @@ const { title, items } = Astro.props as {
   items: Item[]
 }
 
-const sectionTitleClass = 'm-0 px-[10px] text-[16px] font-semibold leading-none text-heading'
+const sectionClass = 'rounded-[14px] border border-line bg-surface px-4 py-4 shadow-soft'
+const sectionTitleClass = 'm-0 text-[1.05rem] font-semibold tracking-tight text-heading'
 const tagCloudClass =
-  'mt-4 mb-0 list-none pl-0 leading-normal [column-count:1] [column-gap:20px] sm:[column-count:2] sm:[column-gap:40px] sm:[column-rule:1px_solid_var(--color-line)]'
-const tagCloudItemClass = 'mb-2 block break-inside-avoid'
+  'mt-4 mb-0 list-none pl-0 leading-normal [column-count:1] [column-gap:20px] sm:[column-count:2] sm:[column-gap:34px] sm:[column-rule:1px_solid_var(--color-line)]'
+const tagCloudItemClass = 'mb-2.5 block break-inside-avoid'
 const tagLinkClass =
-  'inline-block rounded-[4px] border border-line px-[10px] py-0.5 text-muted no-underline hover:border-accent hover:text-accent hover:no-underline'
+  'inline-flex items-center rounded-full border border-line bg-surface-2 px-3 py-1 text-[13px] text-muted no-underline transition-colors duration-150 hover:border-link hover:text-link hover:no-underline'
 ---
 
-<section aria-labelledby={`${title.toLowerCase()}-title`}>
+<section class={sectionClass} aria-labelledby={`${title.toLowerCase()}-title`}>
   <h1 id={`${title.toLowerCase()}-title`} class={sectionTitleClass}>{title}</h1>
 
   <ul class={tagCloudClass} role="list">

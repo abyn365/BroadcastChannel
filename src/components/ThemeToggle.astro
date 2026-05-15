@@ -1,0 +1,14 @@
+---
+const wrapperClass = 'mb-4'
+const buttonClass =
+  'group inline-flex w-full items-center justify-center gap-2 rounded-panel border border-line bg-surface px-3 py-2 text-[13px] font-medium text-heading shadow-soft transition-colors duration-150 hover:bg-surface-2 hover:text-ink'
+const iconClass = 'inline-flex text-[15px] leading-none transition-transform duration-150 group-hover:scale-110 motion-reduce:transition-none'
+const labelClass = 'leading-none'
+---
+
+<div class={wrapperClass}>
+  <button type="button" role="switch" aria-checked="false" aria-label="Dark theme" data-theme-toggle class={buttonClass}>
+    <span data-theme-toggle-icon class={iconClass} aria-hidden="true">🌤️</span>
+    <span data-theme-toggle-label class={labelClass}>Theme</span>
+  </button>
+</div>

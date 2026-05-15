@@ -18,16 +18,18 @@ const BLUESKY = getEnv(import.meta.env, Astro, 'BLUESKY')
 const staticProxy = getEnv(import.meta.env, Astro, 'STATIC_PROXY') ?? '/static/'
 const hideDescription = getEnv(import.meta.env, Astro, 'HIDE_DESCRIPTION')
 
-const headerMainClass = 'mb-[10px] flex items-center p-[10px] font-semibold max-sm:p-0'
-const avatarClass = 'block h-10 w-10 rounded-full border-[3px] border-white object-cover shadow-soft'
-const titleWrapClass = 'ml-[10px] min-w-0 flex-1 pr-[10px] text-[20px]'
-const titleLinkClass = 'text-heading no-underline hover:text-ink hover:underline'
-const iconNavClass = 'flex items-center gap-[2px]'
-const socialLinkClass = 'group p-1 no-underline'
+const headerMainClass = 'mb-6 flex items-center gap-3 rounded-[14px] border border-line bg-surface px-3 py-3 shadow-soft max-sm:mb-4'
+const avatarClass = 'block h-12 w-12 rounded-full border border-line bg-surface-2 object-cover shadow-soft'
+const titleWrapClass = 'min-w-0 flex-1'
+const titleLinkClass =
+  'block truncate text-[1.25rem] font-semibold tracking-tight text-heading no-underline hover:text-link-hover hover:no-underline'
+const iconNavClass = 'ml-auto flex shrink-0 flex-wrap items-center gap-1'
+const socialLinkClass =
+  'group inline-flex h-8 w-8 items-center justify-center rounded-full border border-transparent text-muted no-underline transition-colors duration-150 hover:border-line hover:bg-surface-2 hover:text-link-hover'
 const socialIconClass =
-  'h-[1em] w-[1em] align-bottom [filter:var(--icon-secondary-filter)] group-hover:[filter:var(--icon-hover-filter)]'
+  'h-[1.05em] w-[1.05em] align-middle [filter:var(--icon-secondary-filter)] transition-[filter] duration-150 group-hover:[filter:var(--icon-hover-filter)]'
 const introClass =
-  'mb-5 ml-[3px] break-words rounded-panel border-l-2 border-line bg-code px-5 py-[10px] text-base leading-[1.6] text-muted shadow-soft max-sm:my-5 max-sm:ml-0'
+  'mb-6 break-words rounded-[14px] border border-line bg-surface px-5 py-4 text-[15px] leading-[1.7] text-muted shadow-soft max-sm:mb-5 max-sm:px-4'
 
 const socialLinks = [
   {
@@ -104,8 +106,8 @@ const socialLinks = [
         alt={channel?.title}
         loading="eager"
         fetchpriority="high"
-        width="40"
-        height="40"
+        width="48"
+        height="48"
         class={avatarClass}
       />
     </a>
