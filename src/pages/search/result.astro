@@ -1,4 +1,6 @@
 ---
+import Header from '../../components/header.astro'
+import Layout from '../../layouts/base.astro'
 import List from '../../components/list.astro'
 import { getChannelInfo } from '../../lib/telegram'
 
@@ -11,6 +13,25 @@ channel.seo = {
   title: q ? q : 'Search',
   noindex: true,
 }
+
+const hasResults = channel.posts.length > 0
+const emptyStateClass =
+  'mt-5 rounded-[12px] border border-line bg-[linear-gradient(160deg,rgba(255,255,255,0.2),rgba(255,255,255,0.03))] px-5 py-8 text-center shadow-soft'
+const emptyTitleClass = 'm-0 text-lg font-semibold text-heading'
+const emptyTextClass = 'mt-2 mb-0 text-sm text-muted'
 ---
 
-<List channel={channel} before={false} after={false} pageHeading={q ? `Search: ${q}` : 'Search'} />
+{
+  hasResults ? (
+    <List channel={channel} before={false} after={false} pageHeading={q ? `Search: ${q}` : 'Search'} />
+  ) : (
+    <Layout channel={channel}>
+      <h1 class="sr-only">{q ? `Search: ${q}` : 'Search'}</h1>
+      <Header channel={channel} />
+      <section class={emptyStateClass} aria-live="polite">
+        <p class={emptyTitleClass}>No posts found</p>
+        <p class={emptyTextClass}>Try another keyword or shorter phrase.</p>
+      </section>
+    </Layout>
+  )
+}
