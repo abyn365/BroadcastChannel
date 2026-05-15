@@ -547,93 +547,264 @@ div[class*="commentsPanel"] {
   border-radius: var(--radius-md);
 }
 
-/* ── Mobile-specific overrides ───────────────*/
+/* ── Mobile-specific overrides ───────────────
+   Target: < 600px (sm breakpoint = 37.5rem)
+   Strategy: aside becomes a slim pill bar at
+   the top; nav links become compact chips;
+   search, theme toggle, footer all collapse.
+   ─────────────────────────────────────────── */
 @media (max-width: 599px) {
 
-  /* Feed vertical rhythm */
+  /* ── Feed rhythm ──────────────────────────── */
   ol[aria-label="Posts"],
   ol[aria-label="Post"] {
-    gap: 0.875rem !important;
-    margin-top: 0.875rem !important;
+    gap: 0.75rem !important;
+    margin-top: 0.75rem !important;
   }
 
-  /* Card padding tighter on small screens */
-  article.fade-in-item header,
-  div[class*="contentClass"],
-  div[class*="px-4"] {
+  /* Card edge padding */
+  article.fade-in-item header {
     padding-left:  14px !important;
     padding-right: 14px !important;
   }
 
-  /* Aside — horizontal pill nav on mobile */
+  /* ── Aside: slim sticky pill bar ─────────── */
   aside {
+    /* Stick to the very top of the viewport */
     position: sticky !important;
-    top: 8px !important;
-    border-radius: 14px !important;
-    padding-block: 6px !important;
+    top: 0 !important;
+    z-index: 50 !important;
+
+    /* Full width, no side borders on edge */
+    width: 100% !important;
+    min-width: 0 !important;
+    border-radius: 0 !important;
+
+    /* Tighter pill — just enough height */
+    padding-block: 0 !important;
+
+    /* Stronger glass so content shows behind it */
+    background: linear-gradient(
+      180deg,
+      rgba(242,239,233, 0.94) 0%,
+      rgba(242,239,233, 0.88) 100%
+    ) !important;
+    backdrop-filter: blur(20px) saturate(1.8) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
+
+    /* Bottom border only — like iOS nav bar */
+    border-top:    none !important;
+    border-left:   none !important;
+    border-right:  none !important;
+    border-bottom: 1px solid var(--border-soft) !important;
+    border-radius: 0 !important;
+
+    box-shadow:
+      0 1px 0   var(--border-soft),
+      0 2px 12px rgba(0,0,0,0.06) !important;
   }
 
-  /* Nav pills wrap nicely */
-  nav ul[class*="navList"] {
-    flex-wrap: wrap;
-    gap: 4px 6px !important;
+  html[data-theme='dark'] aside {
+    background: linear-gradient(
+      180deg,
+      rgba(17,18,20, 0.94) 0%,
+      rgba(22,24,28, 0.88) 100%
+    ) !important;
+    border-bottom-color: rgba(255,255,255,0.07) !important;
+  }
+
+  /* The inner scroll container — let it scroll horizontally */
+  aside > div {
+    max-height: none !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+
+    /* Single row layout */
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0 !important;
+
+    /* Subtle scrollbar hide */
+    scrollbar-width: none !important;
+  }
+  aside > div::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* ── Primary nav — horizontal scrolling row ─ */
+  aside nav[aria-label="Primary navigation"] {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* Nav list: single horizontal row, no wrap */
+  aside nav ul {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 2px !important;
+    padding: 6px 8px !important;
+    margin: 0 !important;
+    list-style: none !important;
+    white-space: nowrap !important;
+  }
+
+  aside nav li {
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+  }
+
+  /* Nav link chips */
+  aside nav a {
+    display: inline-flex !important;
+    align-items: center !important;
+    height: 32px !important;
+    padding: 0 12px !important;
+    border-radius: 99px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+    line-height: 1 !important;
+    color: var(--color-muted) !important;
+    text-decoration: none !important;
+    transition:
+      background  0.15s ease,
+      color       0.15s ease !important;
+  }
+
+  aside nav a:hover {
+    background: var(--interactive-hover) !important;
+    color: var(--color-heading) !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Active chip — filled accent style */
+  aside nav a[style*="view-transition-name"],
+  aside nav a.bg-\[var\(--interactive-active\)\] {
+    background: var(--interactive-active) !important;
+    color: var(--color-heading) !important;
+  }
+
+  /* ── Search: hide the checkbox toggle label,
+       show just the inline search form ──────── */
+  /* Hide the emoji 🔍 label toggle on mobile
+     (replaced by the inline form that's always visible) */
+  label[for="search-toggle"] {
+    display: none !important;
+  }
+
+  /* Search checkbox — hidden */
+  input#search-toggle {
+    display: none !important;
+  }
+
+  /* Search form — inline, compact */
+  aside form[role="search"] {
+    display: flex !important;
+    align-items: center !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    padding: 6px 8px 6px 0 !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  aside form[role="search"] input[type="search"] {
+    width: 110px !important;
+    height: 32px !important;
+    font-size: 13px !important;
+    padding: 0 10px !important;
+    border-radius: 99px !important;
+    border: 1px solid var(--border-soft) !important;
+    background: var(--surface-2) !important;
+    transition: width 0.2s ease, background 0.15s ease !important;
+  }
+
+  aside form[role="search"] input[type="search"]:focus {
+    width: 140px !important;
+    background: var(--surface-0) !important;
+    border-color: var(--color-accent) !important;
+    box-shadow: 0 0 0 2px var(--focus-ring) !important;
+    outline: none !important;
+  }
+
+  /* ── Theme toggle — icon-only pill ──────────*/
+  button[data-theme-toggle] {
+    flex: 0 0 auto !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-height: unset !important;
+    padding: 0 !important;
+    margin: 0 8px 0 2px !important;
+    border-radius: 99px !important;
+    font-size: 0 !important;           /* hide text */
+    overflow: hidden !important;
+    position: relative !important;
+  }
+
+  /* Moon/sun icon via ::after pseudo */
+  button[data-theme-toggle]::after {
+    content: '☀' !important;
+    font-size: 15px !important;
+    line-height: 1 !important;
+    display: block !important;
+  }
+
+  html[data-theme='dark'] button[data-theme-toggle]::after {
+    content: '🌙' !important;
+    font-size: 13px !important;
+  }
+
+  /* ── Footer: completely hidden on mobile ───── */
+  aside footer {
+    display: none !important;
+  }
+
+  /* ── Compensate for sticky bar height ──────── */
+  /* The main content area gets top padding so
+     the sticky bar doesn't overlap the first card */
+  #main-content > div > div:first-child {
     padding-top: 8px !important;
-    padding-inline: 10px;
   }
 
-  nav li[class*="navItem"] {
-    margin-bottom: 0 !important;
-  }
-
-  /* Search form mobile */
-  form[role="search"] {
-    margin-top: 6px;
-    padding: 8px;
-  }
-
-  /* Comment section mobile */
+  /* ── Comment section ─────────────────────── */
   section[aria-label="Comments"] {
     padding: 10px 14px !important;
   }
 
   details[data-comments] summary {
-    font-size: 12px;
-    padding: 6px 10px;
-    min-height: 34px;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+    min-height: 34px !important;
   }
 
-  /* Reaction pills tighter */
-  div[class*="reactionList"] {
-    gap: 4px;
-  }
+  /* ── Reaction pills ──────────────────────── */
+  div[class*="reactionList"] { gap: 4px; }
 
   span[class*="reactionPill"] {
     padding: 2px 6px 2px 5px;
     font-size: 11px;
   }
 
-  /* Tag cloud mobile */
-  footer[class*="tagBox"] {
-    gap: 5px;
-  }
+  /* ── Tags ────────────────────────────────── */
+  footer[class*="tagBox"] { gap: 5px; }
 
   a[class*="tagLink"] {
     padding: 2px 8px;
     font-size: 12px;
   }
 
-  /* Pagination */
-  nav[aria-label="Pagination"] {
-    margin-block: 14px;
-  }
+  /* ── Pagination ──────────────────────────── */
+  nav[aria-label="Pagination"] { margin-block: 12px; }
 
-  /* Back to top — safe from notch */
-  #back-to-top-wrapper {
-    inset-inline-end: 12px;
-  }
-  #back-to-top {
-    inset-inline-end: 12px;
-  }
+  /* ── Back to top ─────────────────────────── */
+  #back-to-top-wrapper { inset-inline-end: 12px; }
+  #back-to-top         { inset-inline-end: 12px; }
 }
 
 /* ── Reaction pills — premium styling ─────── */
