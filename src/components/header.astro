@@ -18,16 +18,20 @@ const BLUESKY = getEnv(import.meta.env, Astro, 'BLUESKY')
 const staticProxy = getEnv(import.meta.env, Astro, 'STATIC_PROXY') ?? '/static/'
 const hideDescription = getEnv(import.meta.env, Astro, 'HIDE_DESCRIPTION')
 
-const headerMainClass = 'mb-[10px] flex items-center p-[10px] font-semibold max-sm:p-0'
-const avatarClass = 'block h-10 w-10 rounded-full border-[3px] border-white object-cover shadow-soft'
-const titleWrapClass = 'ml-[10px] min-w-0 flex-1 pr-[10px] text-[20px]'
-const titleLinkClass = 'text-heading no-underline hover:text-ink hover:underline'
-const iconNavClass = 'flex items-center gap-[2px]'
-const socialLinkClass = 'group p-1 no-underline'
+const headerMainClass =
+  'mb-4 flex items-center rounded-[24px] border border-line bg-code p-3 font-semibold shadow-soft backdrop-blur max-sm:p-3'
+const avatarClass =
+  'block h-12 w-12 rounded-full border-[3px] border-surface-strong object-cover shadow-soft ring-2 ring-line'
+const titleWrapClass = 'ml-3 min-w-0 flex-1 pr-3 text-[22px] leading-tight'
+const titleLinkClass =
+  'bg-gradient-to-r from-heading to-accent bg-clip-text text-heading no-underline hover:text-transparent hover:no-underline'
+const iconNavClass = 'flex items-center gap-1'
+const socialLinkClass =
+  'group rounded-full border border-transparent bg-surface/50 p-1.5 no-underline transition-[background-color,border-color,transform] duration-200 hover:-translate-y-px hover:border-line hover:bg-surface-strong hover:no-underline'
 const socialIconClass =
-  'h-[1em] w-[1em] align-bottom [filter:var(--icon-secondary-filter)] group-hover:[filter:var(--icon-hover-filter)]'
+  'h-[1em] w-[1em] align-bottom [filter:var(--icon-secondary-filter)] transition-[filter] duration-200 group-hover:[filter:var(--icon-hover-filter)]'
 const introClass =
-  'mb-5 ml-[3px] break-words rounded-panel border-l-2 border-line bg-code px-5 py-[10px] text-base leading-[1.6] text-muted shadow-soft max-sm:my-5 max-sm:ml-0'
+  'mb-6 break-words rounded-[24px] border border-line bg-code px-5 py-4 text-base leading-[1.7] text-muted shadow-soft backdrop-blur max-sm:my-5'
 
 const socialLinks = [
   {

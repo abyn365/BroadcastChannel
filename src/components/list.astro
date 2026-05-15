@@ -9,10 +9,10 @@ const posts = channel.posts ?? []
 
 const beforeCursor = posts[posts.length - 1]?.id
 const afterCursor = posts[0]?.id
-const itemsClass = 'mt-5 mb-0 ml-7 list-none pl-0 max-sm:ml-0'
-const paginationClass = 'my-5 flex items-center'
+const itemsClass = 'mb-0 mt-6 list-none space-y-1 pl-0'
+const paginationClass = 'my-6 flex items-center gap-3'
 const paginationLinkClass =
-  'inline-flex min-h-9 items-center justify-center rounded-[30px] border border-muted px-[15px] py-[5px] text-[14px] font-medium text-muted no-underline hover:text-accent hover:no-underline active:bg-line'
+  'inline-flex min-h-10 items-center justify-center rounded-full border border-line bg-code px-5 py-2 text-[14px] font-semibold text-muted no-underline shadow-soft transition-[background-color,color,transform] duration-200 hover:-translate-y-px hover:bg-surface-strong hover:text-accent hover:no-underline active:translate-y-0'
 const paginationInfoClass = 'flex-1 text-center align-middle text-[12px] font-medium text-muted'
 const paginationPlaceholderClass = 'inline-block w-[34px]'
 // const cursor = +Astro.params.cursor

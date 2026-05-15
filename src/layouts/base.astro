@@ -95,32 +95,42 @@ const navs: NavItem[] = (getEnv(import.meta.env, Astro, 'NAVS') || '')
     }
   })
 
-const layoutShellClass = 'mx-5'
-const layoutGridClass = 'mx-auto flex w-full max-w-[800px] flex-col-reverse sm:flex-row sm:items-start'
-const mainPanelClass = 'w-full min-w-0 pb-5 pt-[10px] sm:mr-5 sm:flex-1 sm:border-r sm:border-line sm:pr-[30px] sm:pt-5'
+const layoutShellClass = 'mx-5 min-h-screen py-4 sm:py-8'
+const layoutGridClass = 'mx-auto flex w-full max-w-[920px] flex-col-reverse gap-4 sm:flex-row sm:items-start sm:gap-6'
+const mainPanelClass =
+  'w-full min-w-0 rounded-[28px] border border-line bg-surface/85 px-4 pb-6 pt-4 shadow-soft backdrop-blur-xl sm:flex-1 sm:px-7 sm:py-6'
 const asidePanelClass =
-  'sticky top-0 w-full min-w-0 border-b border-line bg-paper pb-[10px] shadow-[0_4px_16px_-16px_rgba(0,0,0,0.1)] sm:w-[200px] sm:min-w-[200px] sm:self-start sm:border-b-0 sm:bg-transparent sm:pb-5 sm:shadow-none'
-const asideInnerClass = 'relative overflow-y-visible sm:max-h-[100svh] sm:overflow-y-auto'
-const navListClass = 'm-0 flex list-none flex-wrap gap-[2px] pl-0 pt-5 sm:block'
-const navItemClass = 'flex items-center text-[14px] leading-none sm:mb-[10px] sm:text-base sm:leading-normal'
+  'sticky top-0 z-10 w-full min-w-0 rounded-b-[24px] border border-line bg-surface/90 p-3 shadow-soft backdrop-blur-xl sm:top-6 sm:w-[220px] sm:min-w-[220px] sm:self-start sm:rounded-[28px] sm:p-4'
+const asideInnerClass = 'relative overflow-y-visible sm:max-h-[calc(100svh-3rem)] sm:overflow-y-auto'
+const navListClass = 'm-0 flex list-none flex-wrap gap-2 p-0 sm:block'
+const navItemClass = 'flex items-center text-[14px] leading-none sm:mb-2 sm:text-base sm:leading-normal'
 const navLinkClass =
-  'flex-1 inline-block rounded-panel px-[10px] py-[5px] text-heading no-underline transition-[background-color,box-shadow] duration-150 ease-in-out hover:bg-white/65 hover:shadow-soft hover:no-underline'
-const navLinkCurrentClass = 'bg-white/75 shadow-soft'
+  'inline-flex flex-1 items-center rounded-panel px-3 py-2 text-heading no-underline transition-[background-color,box-shadow,color,transform] duration-200 ease-out hover:-translate-y-px hover:bg-surface-strong hover:shadow-soft hover:no-underline'
+const navLinkCurrentClass = 'bg-surface-strong text-accent shadow-soft'
 const skipLinkClass =
-  'pointer-events-none absolute left-5 top-0 z-[1100] -translate-y-full rounded-panel bg-heading px-3 py-2 text-sm text-white no-underline transition-transform duration-150 focus-visible:pointer-events-auto focus-visible:translate-y-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-heading'
+  'pointer-events-none absolute left-5 top-0 z-[1100] -translate-y-full rounded-panel bg-heading px-3 py-2 text-sm text-paper no-underline transition-transform duration-150 focus-visible:pointer-events-auto focus-visible:translate-y-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent'
 const searchToggleId = 'search-toggle'
 const searchToggleClass = 'peer sr-only sm:hidden'
 const searchToggleLabelClass =
-  'absolute right-0 top-5 inline-flex h-6 w-6 items-center justify-center rounded-panel bg-paper text-base leading-6 text-heading no-underline peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-heading sm:hidden'
-const searchFormClass = 'mt-3 hidden rounded-panel bg-code p-2 text-muted peer-checked:block sm:mt-0 sm:block'
+  'absolute right-0 top-0 inline-flex h-9 w-9 items-center justify-center rounded-panel bg-code text-base leading-6 text-heading no-underline shadow-soft peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent sm:hidden'
+const searchFormClass =
+  'mt-3 hidden rounded-panel border border-line bg-code p-2 text-muted shadow-soft peer-checked:block sm:mt-4 sm:block'
 const searchInputClass =
-  'box-border w-full rounded-panel border border-paper bg-code px-2 text-[16px] leading-[2.4] text-muted outline-none placeholder:text-muted focus-visible:border-heading focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-heading sm:text-[12px]'
-const footerClass = 'hidden p-2 text-[14px] leading-[1.5] text-footer sm:block'
+  'box-border w-full rounded-[12px] border border-line bg-surface px-3 text-[16px] leading-[2.4] text-ink outline-none placeholder:text-muted focus-visible:border-accent focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-accent sm:text-[13px]'
+const footerClass = 'hidden p-2 pt-4 text-[13px] leading-[1.5] text-footer sm:block'
 const backToTopClass =
-  'pointer-events-auto z-[1000] flex h-8 w-8 items-center justify-center rounded-full bg-code text-[24px] opacity-90 transition-transform duration-300 hover:-translate-y-[3px] active:translate-y-px'
+  'pointer-events-auto z-[1000] flex h-8 w-8 items-center justify-center rounded-full border border-line bg-surface-strong text-[24px] opacity-90 shadow-soft backdrop-blur transition-transform duration-300 hover:-translate-y-[3px] active:translate-y-px'
 const backToTopIconClass = 'h-auto w-auto [filter:var(--icon-secondary-filter)]'
 const skipLinkText = 'Skip to main content'
 const searchLabelText = 'Search'
+const themeToggleClass =
+  'theme-toggle mt-3 flex w-full items-center justify-between rounded-panel border border-line bg-code px-3 py-2 text-[13px] font-medium shadow-soft transition-[background-color,box-shadow,color] duration-200 hover:bg-surface-strong sm:mt-4'
+const themeToggleTrackClass =
+  'relative inline-flex h-6 w-12 items-center rounded-full border border-line bg-[var(--color-theme-track)] p-0.5'
+const themeToggleThumbClass =
+  'theme-toggle-thumb absolute left-0.5 h-5 w-5 rounded-full bg-[var(--color-theme-thumb)] shadow-soft transition-transform duration-200 ease-out'
+const themeToggleIconClass =
+  'relative z-10 flex h-5 w-5 items-center justify-center text-[11px] leading-none transition-opacity'
 ---
 
 <!doctype html>
@@ -128,7 +138,20 @@ const searchLabelText = 'Search'
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f4f1ec" />
+    <meta name="theme-color" content="#f5f0e8" />
+    <script is:inline>
+      void (() => {
+        const root = document.documentElement
+        const themeColor = document.querySelector('meta[name="theme-color"]')
+        const storedTheme = localStorage.getItem('theme')
+        const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        const initialTheme = storedTheme || preferredTheme
+
+        root.dataset.theme = initialTheme
+        root.style.colorScheme = initialTheme
+        themeColor?.setAttribute('content', initialTheme === 'dark' ? '#101419' : '#f5f0e8')
+      })()
+    </script>
     <link rel="alternate" type="application/rss+xml" title={`${RSS_PREFIX}${channel?.title}`} href={RSS_URL} />
     <SEO
       titleTemplate={hasCustomTitle ? `%s | ${siteTitle}` : undefined}
@@ -207,6 +230,21 @@ const searchLabelText = 'Search'
                 </ul>
               </nav>
 
+              <button
+                class={themeToggleClass}
+                type="button"
+                data-theme-toggle
+                aria-label="Toggle dark theme"
+                aria-pressed="false"
+              >
+                <span>Theme</span>
+                <span class={themeToggleTrackClass} aria-hidden="true">
+                  <span class:list={[themeToggleIconClass, 'theme-toggle-sun']}>☀</span>
+                  <span class:list={[themeToggleIconClass, 'theme-toggle-moon opacity-40']}>☾</span>
+                  <span class={themeToggleThumbClass}></span>
+                </span>
+              </button>
+
               <input
                 id={searchToggleId}
                 class={searchToggleClass}
@@ -259,6 +297,28 @@ const searchLabelText = 'Search'
         </a>
       </div>
     </main>
+    <script is:inline>
+      void (() => {
+        const root = document.documentElement
+        const toggle = document.querySelector('[data-theme-toggle]')
+        const themeColor = document.querySelector('meta[name="theme-color"]')
+        const setStoredTheme = (theme) => localStorage.setItem('theme', theme)
+        const applyTheme = (theme) => {
+          root.dataset.theme = theme
+          root.style.colorScheme = theme
+          themeColor?.setAttribute('content', theme === 'dark' ? '#101419' : '#f5f0e8')
+          toggle?.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false')
+        }
+
+        applyTheme(root.dataset.theme === 'dark' ? 'dark' : 'light')
+        toggle?.addEventListener('click', () => {
+          const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark'
+
+          applyTheme(nextTheme)
+          setStoredTheme(nextTheme)
+        })
+      })()
+    </script>
     <Fragment set:html={FOOTER_INJECT} />
   </body>
 </html>
