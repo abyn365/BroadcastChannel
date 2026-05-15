@@ -192,21 +192,23 @@
   }
 
   /* ── Bokeh orb layer ─────────────────────────
-     Two fixed pseudo-elements on <html> create
-     large soft gradient orbs that drift slowly.
-     They sit behind everything (z-index 0).     */
-  html::before,
-  html::after {
-    content: '';
+     Independent fixed orb elements are injected
+     into the DOM and animated individually.     */
+  .orb-layer {
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 0;
+  }
+
+  .orb {
+    position: absolute;
+    inset: 0;
     will-change: transform;
   }
 
-  /* Orb cluster A — top-left coral + bottom-right lilac */
-  html::before {
+  /* Orb A — top-left coral + bottom-right lilac */
+  .orb--a {
     background:
       radial-gradient(ellipse 55% 45% at 12% 8%,
         rgba(210, 100, 60, 0.13) 0%, transparent 70%),
@@ -215,14 +217,23 @@
     animation: orb-a 28s ease-in-out infinite alternate;
   }
 
-  /* Orb cluster B — top-right blue + bottom-left amber */
-  html::after {
+  /* Orb B — top-right blue + bottom-left amber */
+  .orb--b {
     background:
       radial-gradient(ellipse 50% 40% at 78% 15%,
         rgba(100, 150, 220, 0.08) 0%, transparent 65%),
       radial-gradient(ellipse 45% 55% at 22% 90%,
         rgba(190, 140, 80, 0.09) 0%, transparent 60%);
     animation: orb-b 34s ease-in-out infinite alternate;
+  }
+
+  .orb--c {
+    background:
+      radial-gradient(ellipse 44% 38% at 62% 42%,
+        rgba(110, 180, 140, 0.08) 0%, transparent 63%),
+      radial-gradient(ellipse 36% 42% at 28% 28%,
+        rgba(220, 110, 140, 0.07) 0%, transparent 60%);
+    animation: orb-c 40s ease-in-out infinite alternate;
   }
 
   @keyframes orb-a {
@@ -239,8 +250,15 @@
     100% { transform: translate(-20px,  15px) scale(1.01); }
   }
 
+  @keyframes orb-c {
+    0%   { transform: translate(  0px,   0px) scale(1);    }
+    33%  { transform: translate( 30px,  35px) scale(1.05); }
+    66%  { transform: translate(-35px, -25px) scale(0.96); }
+    100% { transform: translate( 15px, -10px) scale(1.02); }
+  }
+
   /* Dark mode orbs — deeper, cooler tones */
-  html[data-theme='dark']::before {
+  html[data-theme='dark'] .orb--a {
     background:
       radial-gradient(ellipse 55% 45% at 12% 8%,
         rgba(180, 70, 40, 0.14) 0%, transparent 70%),
@@ -248,12 +266,20 @@
         rgba(80, 60, 140, 0.12) 0%, transparent 65%);
   }
 
-  html[data-theme='dark']::after {
+  html[data-theme='dark'] .orb--b {
     background:
       radial-gradient(ellipse 50% 40% at 78% 15%,
         rgba(40, 80, 160, 0.10) 0%, transparent 65%),
       radial-gradient(ellipse 45% 55% at 22% 90%,
         rgba(140, 90, 30, 0.10) 0%, transparent 60%);
+  }
+
+  html[data-theme='dark'] .orb--c {
+    background:
+      radial-gradient(ellipse 44% 38% at 62% 42%,
+        rgba(50, 120, 90, 0.11) 0%, transparent 63%),
+      radial-gradient(ellipse 36% 42% at 28% 28%,
+        rgba(160, 70, 100, 0.10) 0%, transparent 60%);
   }
 
   /* Ensure all content sits above the orb layer */
