@@ -809,7 +809,7 @@ article.fade-in-item {
     flex: 1 1 auto !important;
     min-width: 0 !important;
     margin: 0 !important;
-    padding: 6px 6px 6px 4px !important;
+    padding: 6px 4px 6px 4px !important;
     max-width: min(34vw, 240px) !important;
     border-left: 1px solid var(--border-soft) !important;
     border-top: none !important;
@@ -820,7 +820,7 @@ article.fade-in-item {
   }
 
   aside form[role='search'] input[type='search'] {
-    width: clamp(96px, 24vw, 180px) !important;
+    width: clamp(112px, 30vw, 220px) !important;
     max-width: 100% !important;
     height: 30px !important;
     font-size: 12.5px !important;
@@ -835,7 +835,7 @@ article.fade-in-item {
   }
 
   aside form[role='search'] input[type='search']:focus {
-    width: clamp(128px, 36vw, 240px) !important;
+    width: clamp(148px, 42vw, 300px) !important;
     background: var(--surface-0) !important;
     border-color: var(--color-accent) !important;
     box-shadow: 0 0 0 2px var(--focus-ring) !important;
@@ -849,7 +849,7 @@ article.fade-in-item {
     height: 32px !important;
     min-height: unset !important;
     padding: 0 !important;
-    margin: 0 8px 0 2px !important;
+    margin: 0 6px 0 4px !important;
     border-radius: 99px !important;
     font-size: 0 !important; /* hide text */
     overflow: hidden !important;
