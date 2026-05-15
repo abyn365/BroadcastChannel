@@ -124,9 +124,6 @@ SENTRY_PROJECT=SENTRY_PROJECT
 HOST=telegram.dog
 STATIC_PROXY=
 
-## Enable Google Site Search
-GOOGLE_SEARCH_SITE=memo.miantiao.me
-
 ## Enable tags page, separate tags with commas
 TAGS=tag1,tag2,tag3
 

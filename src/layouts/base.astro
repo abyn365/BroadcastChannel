@@ -77,8 +77,7 @@ const seoParams = {
   },
 }
 
-const GOOGLE_SEARCH_SITE = getEnv(import.meta.env, Astro, 'GOOGLE_SEARCH_SITE')
-const searchAction = GOOGLE_SEARCH_SITE ? 'https://www.google.com/search' : `${SITE_URL}search/result`
+const searchAction = `${SITE_URL}search/result`
 
 const HEADER_INJECT = getEnv(import.meta.env, Astro, 'HEADER_INJECT')
 const FOOTER_INJECT = getEnv(import.meta.env, Astro, 'FOOTER_INJECT')
@@ -121,10 +120,12 @@ const backToTopClass =
 const backToTopIconClass = 'h-auto w-auto [filter:var(--icon-secondary-filter)]'
 const skipLinkText = 'Skip to main content'
 const searchLabelText = 'Search'
+const themeToggleClass =
+  'mt-2 inline-flex w-full items-center justify-center rounded-panel border border-line bg-code px-2 py-1 text-[14px] text-heading hover:bg-white/65'
 ---
 
 <!doctype html>
-<html lang={locale ?? 'en'}>
+<html lang={locale ?? 'en'} data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -140,6 +141,16 @@ const searchLabelText = 'Search'
       {...seoParams}
     />
     <Fragment set:html={HEADER_INJECT} />
+    <script is:inline>
+      ;(() => {
+        const key = 'theme'
+        const root = document.documentElement
+        const saved = localStorage.getItem(key)
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        const theme = saved === 'dark' || saved === 'light' ? saved : systemDark ? 'dark' : 'light'
+        root.dataset.theme = theme
+      })()
+    </script>
   </head>
 
   <body>
@@ -216,7 +227,6 @@ const searchLabelText = 'Search'
               />
               <label for={searchToggleId} class={searchToggleLabelClass} aria-hidden="true">🔍</label>
               <form class={searchFormClass} action={searchAction} method="get" role="search">
-                {GOOGLE_SEARCH_SITE ? <input type="hidden" name="as_sitesearch" value={GOOGLE_SEARCH_SITE} /> : null}
                 <label class="sr-only" for="search-query">{searchLabelText}</label>
                 <input
                   id="search-query"
@@ -229,6 +239,7 @@ const searchLabelText = 'Search'
                   spellcheck={false}
                 />
               </form>
+              <button type="button" class={themeToggleClass} data-theme-toggle> Toggle theme </button>
 
               <footer class={footerClass}>
                 Powered by
@@ -260,5 +271,35 @@ const searchLabelText = 'Search'
       </div>
     </main>
     <Fragment set:html={FOOTER_INJECT} />
+    <script is:inline>
+      ;(() => {
+        const key = 'theme'
+        const root = document.documentElement
+
+        function getTheme() {
+          return root.dataset.theme === 'dark' ? 'dark' : 'light'
+        }
+
+        function setTheme(theme) {
+          root.dataset.theme = theme
+          localStorage.setItem(key, theme)
+          window.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }))
+        }
+
+        document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+          const updateLabel = () => {
+            button.textContent = getTheme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+          }
+
+          button.addEventListener('click', () => {
+            setTheme(getTheme() === 'dark' ? 'light' : 'dark')
+            updateLabel()
+          })
+
+          updateLabel()
+          window.addEventListener('themechange', updateLabel)
+        })
+      })()
+    </script>
   </body>
 </html>
