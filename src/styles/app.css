@@ -7,31 +7,28 @@
 
 @theme {
   --font-sans:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
-    ui-sans-serif, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-    'Segoe UI Symbol', 'Noto Color Emoji';
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', ui-sans-serif, system-ui, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
   --breakpoint-sm: 37.5rem;
 
   /* Light mode design tokens */
-  --color-paper:    #f2efe9;
-  --color-ink:      #0f0f0f;
-  --color-heading:  #1a1a1a;
-  --color-accent:   #c0392b;
-  --color-surface:  #ffffff;
-  --color-code:     #f7f6f3;
-  --color-muted:    #6b6460;
-  --color-link:     #536876;
+  --color-paper: #f2efe9;
+  --color-ink: #0f0f0f;
+  --color-heading: #1a1a1a;
+  --color-accent: #c0392b;
+  --color-surface: #ffffff;
+  --color-code: #f7f6f3;
+  --color-muted: #6b6460;
+  --color-link: #536876;
   --color-link-hover: #2e4553;
-  --color-line:     rgba(0, 0, 0, 0.06);
-  --color-footer:   #888480;
+  --color-line: rgba(0, 0, 0, 0.06);
+  --color-footer: #888480;
 
   /* Elevation shadows — layered, not flat */
   --shadow-soft:
-    0 1px 1px rgba(0,0,0,0.025),
-    0 2px 4px rgba(0,0,0,0.03),
-    0 4px 8px  rgba(0,0,0,0.025),
-    0 8px 16px rgba(0,0,0,0.02);
+    0 1px 1px rgba(0, 0, 0, 0.025), 0 2px 4px rgba(0, 0, 0, 0.03), 0 4px 8px rgba(0, 0, 0, 0.025),
+    0 8px 16px rgba(0, 0, 0, 0.02);
 
   --radius-panel: 3px;
   --radius-media: 10px;
@@ -44,52 +41,44 @@
   :root {
     --box-margin: 10px;
     --back-to-top-offset: 1.25rem;
-    --back-to-top-size:   2rem;
-    --dot-size:           8px;
+    --back-to-top-size: 2rem;
+    --dot-size: 8px;
 
     /* Icon filters */
-    --icon-hover-filter:
-      invert(48%) sepia(5%) saturate(400%) hue-rotate(10deg) brightness(82%) contrast(88%);
-    --icon-secondary-filter:
-      invert(95%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(80%) contrast(82%);
+    --icon-hover-filter: invert(48%) sepia(5%) saturate(400%) hue-rotate(10deg) brightness(82%) contrast(88%);
+    --icon-secondary-filter: invert(95%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(80%) contrast(82%);
 
     /* Glass surfaces — iOS-quality */
-    --glass-bg:             rgba(255, 255, 255, 0.72);
-    --glass-border:         rgba(255, 255, 255, 0.65);
-    --glass-highlight:      rgba(255, 255, 255, 0.30);
-    --glass-blur:           20px;
-    --glass-saturation:     1.6;
+    --glass-bg: rgba(255, 255, 255, 0.72);
+    --glass-border: rgba(255, 255, 255, 0.65);
+    --glass-highlight: rgba(255, 255, 255, 0.3);
+    --glass-blur: 20px;
+    --glass-saturation: 1.6;
 
     /* Surface stack */
-    --surface-0:            rgba(255, 255, 255, 0.96);
-    --surface-1:            rgba(255, 255, 255, 0.88);
-    --surface-2:            rgba(255, 255, 255, 0.70);
-    --surface-3:            rgba(255, 255, 255, 0.52);
-    --surface-hover:        rgba(255, 255, 255, 0.62);
-    --surface-active:       rgba(255, 255, 255, 0.86);
+    --surface-0: rgba(255, 255, 255, 0.96);
+    --surface-1: rgba(255, 255, 255, 0.88);
+    --surface-2: rgba(255, 255, 255, 0.7);
+    --surface-3: rgba(255, 255, 255, 0.52);
+    --surface-hover: rgba(255, 255, 255, 0.62);
+    --surface-active: rgba(255, 255, 255, 0.86);
 
     /* Borders */
-    --border-soft:          rgba(0, 0, 0, 0.07);
-    --border-medium:        rgba(0, 0, 0, 0.12);
+    --border-soft: rgba(0, 0, 0, 0.07);
+    --border-medium: rgba(0, 0, 0, 0.12);
 
     /* Shadows — elevation system */
     --shadow-elevated:
-      0 2px  4px  rgba(15,23,42,0.04),
-      0 8px  20px rgba(15,23,42,0.10),
-      0 20px 40px rgba(15,23,42,0.08);
+      0 2px 4px rgba(15, 23, 42, 0.04), 0 8px 20px rgba(15, 23, 42, 0.1), 0 20px 40px rgba(15, 23, 42, 0.08);
     --shadow-card:
-      0 1px  2px  rgba(15,23,42,0.03),
-      0 4px  12px rgba(15,23,42,0.06),
-      0 12px 24px rgba(15,23,42,0.05);
+      0 1px 2px rgba(15, 23, 42, 0.03), 0 4px 12px rgba(15, 23, 42, 0.06), 0 12px 24px rgba(15, 23, 42, 0.05);
     --shadow-float:
-      0 4px  8px  rgba(15,23,42,0.06),
-      0 16px 32px rgba(15,23,42,0.12),
-      0 32px 56px rgba(15,23,42,0.10);
+      0 4px 8px rgba(15, 23, 42, 0.06), 0 16px 32px rgba(15, 23, 42, 0.12), 0 32px 56px rgba(15, 23, 42, 0.1);
 
     /* Interactive */
-    --interactive-hover:    rgba(255, 255, 255, 0.62);
-    --interactive-active:   rgba(255, 255, 255, 0.86);
-    --focus-ring:           rgba(192, 57, 43, 0.40);
+    --interactive-hover: rgba(255, 255, 255, 0.62);
+    --interactive-active: rgba(255, 255, 255, 0.86);
+    --focus-ring: rgba(192, 57, 43, 0.4);
 
     /* Radius */
     --radius-xl: 18px;
@@ -97,66 +86,57 @@
     --radius-md: 10px;
 
     /* Motion */
-    --ease-spring:  cubic-bezier(0.34, 1.48, 0.64, 1);
-    --ease-smooth:  cubic-bezier(0.22, 1, 0.36, 1);
-    --ease-out:     cubic-bezier(0.0,  0, 0.2, 1);
-    --ease-in-out:  cubic-bezier(0.4,  0, 0.2, 1);
-    --dur-fast:     160ms;
-    --dur-base:     240ms;
-    --dur-slow:     400ms;
+    --ease-spring: cubic-bezier(0.34, 1.48, 0.64, 1);
+    --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --dur-fast: 160ms;
+    --dur-base: 240ms;
+    --dur-slow: 400ms;
   }
 
   /* ── Dark mode ─────────────────────────────── */
   html[data-theme='dark'] {
     color-scheme: dark;
 
-    --color-paper:       #111214;
-    --color-ink:         #e8e6e3;
-    --color-heading:     #f0ede8;
-    --color-accent:      #ff7355;
-    --color-surface:     #1c1e21;
-    --color-code:        #1a1c1f;
-    --color-muted:       #a09c98;
-    --color-link:        #8ba8c4;
-    --color-link-hover:  #b8cedf;
-    --color-line:        rgba(255, 255, 255, 0.09);
-    --color-footer:      #a09c98;
+    --color-paper: #111214;
+    --color-ink: #e8e6e3;
+    --color-heading: #f0ede8;
+    --color-accent: #ff7355;
+    --color-surface: #1c1e21;
+    --color-code: #1a1c1f;
+    --color-muted: #a09c98;
+    --color-link: #8ba8c4;
+    --color-link-hover: #b8cedf;
+    --color-line: rgba(255, 255, 255, 0.09);
+    --color-footer: #a09c98;
 
-    --icon-hover-filter:      invert(88%);
-    --icon-secondary-filter:  invert(65%);
+    --icon-hover-filter: invert(88%);
+    --icon-secondary-filter: invert(65%);
 
-    --glass-bg:           rgba(22, 24, 28, 0.75);
-    --glass-border:       rgba(255, 255, 255, 0.09);
-    --glass-highlight:    rgba(255, 255, 255, 0.05);
-    --glass-blur:         24px;
-    --glass-saturation:   1.2;
+    --glass-bg: rgba(22, 24, 28, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.09);
+    --glass-highlight: rgba(255, 255, 255, 0.05);
+    --glass-blur: 24px;
+    --glass-saturation: 1.2;
 
-    --surface-0:          rgba(26, 28, 32, 0.97);
-    --surface-1:          rgba(28, 30, 34, 0.92);
-    --surface-2:          rgba(32, 34, 40, 0.82);
-    --surface-3:          rgba(38, 40, 48, 0.68);
-    --surface-hover:      rgba(255, 255, 255, 0.06);
-    --surface-active:     rgba(255, 255, 255, 0.10);
+    --surface-0: rgba(26, 28, 32, 0.97);
+    --surface-1: rgba(28, 30, 34, 0.92);
+    --surface-2: rgba(32, 34, 40, 0.82);
+    --surface-3: rgba(38, 40, 48, 0.68);
+    --surface-hover: rgba(255, 255, 255, 0.06);
+    --surface-active: rgba(255, 255, 255, 0.1);
 
-    --border-soft:        rgba(255, 255, 255, 0.08);
-    --border-medium:      rgba(255, 255, 255, 0.14);
+    --border-soft: rgba(255, 255, 255, 0.08);
+    --border-medium: rgba(255, 255, 255, 0.14);
 
-    --shadow-elevated:
-      0 2px  4px  rgba(0,0,0,0.25),
-      0 8px  20px rgba(0,0,0,0.40),
-      0 20px 40px rgba(0,0,0,0.35);
-    --shadow-card:
-      0 1px  2px  rgba(0,0,0,0.20),
-      0 4px  12px rgba(0,0,0,0.30),
-      0 12px 24px rgba(0,0,0,0.25);
-    --shadow-float:
-      0 4px  8px  rgba(0,0,0,0.30),
-      0 16px 32px rgba(0,0,0,0.50),
-      0 32px 56px rgba(0,0,0,0.45);
+    --shadow-elevated: 0 2px 4px rgba(0, 0, 0, 0.25), 0 8px 20px rgba(0, 0, 0, 0.4), 0 20px 40px rgba(0, 0, 0, 0.35);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.3), 0 12px 24px rgba(0, 0, 0, 0.25);
+    --shadow-float: 0 4px 8px rgba(0, 0, 0, 0.3), 0 16px 32px rgba(0, 0, 0, 0.5), 0 32px 56px rgba(0, 0, 0, 0.45);
 
-    --interactive-hover:  rgba(255, 255, 255, 0.07);
+    --interactive-hover: rgba(255, 255, 255, 0.07);
     --interactive-active: rgba(255, 255, 255, 0.12);
-    --focus-ring:         rgba(255, 115, 85, 0.45);
+    --focus-ring: rgba(255, 115, 85, 0.45);
   }
 
   /* ── Global resets ─────────────────────────── */
@@ -176,8 +156,7 @@
   body {
     background-color: var(--color-paper);
     /* Dot grid: 1px dots on a 26px grid */
-    background-image:
-      radial-gradient(circle, var(--dot-color, rgba(0,0,0,0.10)) 1px, transparent 1px);
+    background-image: radial-gradient(circle, var(--dot-color, rgba(0, 0, 0, 0.1)) 1px, transparent 1px);
     background-size: 26px 26px;
     /* Parallax: JS nudges --grid-x/y on scroll */
     background-position: var(--grid-x, 0px) var(--grid-y, 0px);
@@ -188,7 +167,7 @@
   }
 
   html[data-theme='dark'] body {
-    --dot-color: rgba(255,255,255,0.07);
+    --dot-color: rgba(255, 255, 255, 0.07);
   }
 
   /* ── Bokeh orb layer ─────────────────────────
@@ -235,24 +214,48 @@
   }
 
   @keyframes orb-a {
-    0%   { transform: translate(-50%, -50%) translate(0, 0) scale(1); }
-    33%  { transform: translate(-50%, -50%) translate(40px, -30px) scale(1.04); }
-    66%  { transform: translate(-50%, -50%) translate(-20px, 50px) scale(0.97); }
-    100% { transform: translate(-50%, -50%) translate(30px, 20px) scale(1.02); }
+    0% {
+      transform: translate(-50%, -50%) translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(-50%, -50%) translate(40px, -30px) scale(1.04);
+    }
+    66% {
+      transform: translate(-50%, -50%) translate(-20px, 50px) scale(0.97);
+    }
+    100% {
+      transform: translate(-50%, -50%) translate(30px, 20px) scale(1.02);
+    }
   }
 
   @keyframes orb-b {
-    0%   { transform: translate(-50%, -50%) translate(0, 0) scale(1); }
-    33%  { transform: translate(-50%, -50%) translate(-50px, 30px) scale(1.03); }
-    66%  { transform: translate(-50%, -50%) translate(25px, -40px) scale(0.98); }
-    100% { transform: translate(-50%, -50%) translate(-20px, 15px) scale(1.01); }
+    0% {
+      transform: translate(-50%, -50%) translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(-50%, -50%) translate(-50px, 30px) scale(1.03);
+    }
+    66% {
+      transform: translate(-50%, -50%) translate(25px, -40px) scale(0.98);
+    }
+    100% {
+      transform: translate(-50%, -50%) translate(-20px, 15px) scale(1.01);
+    }
   }
 
   @keyframes orb-c {
-    0%   { transform: translate(-50%, -50%) translate(0, 0) scale(1); }
-    33%  { transform: translate(-50%, -50%) translate(30px, 35px) scale(1.05); }
-    66%  { transform: translate(-50%, -50%) translate(-35px, -25px) scale(0.96); }
-    100% { transform: translate(-50%, -50%) translate(15px, -10px) scale(1.02); }
+    0% {
+      transform: translate(-50%, -50%) translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(-50%, -50%) translate(30px, 35px) scale(1.05);
+    }
+    66% {
+      transform: translate(-50%, -50%) translate(-35px, -25px) scale(0.96);
+    }
+    100% {
+      transform: translate(-50%, -50%) translate(15px, -10px) scale(1.02);
+    }
   }
 
   /* Dark mode orbs — deeper, cooler tones */
@@ -311,23 +314,32 @@
   }
 
   /* Refined scrollbar */
-  ::-webkit-scrollbar       { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
   ::-webkit-scrollbar-thumb {
     background: var(--border-medium);
     border-radius: 99px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0,0,0,0.25);
+    background: rgba(0, 0, 0, 0.25);
   }
   html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.25);
+    background: rgba(255, 255, 255, 0.25);
   }
 
   /* Reduced-motion */
   @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    *,*::before,*::after {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
@@ -339,17 +351,12 @@
    COMPONENT LAYER
    ───────────────────────────────────────────── */
 @layer components {
-
   /* ── iOS-quality glass panel ─────────────────
      Mimics UIBlurEffect.Style.systemMaterial     */
   .glass-panel {
     background: var(--glass-bg);
-    backdrop-filter:
-      blur(var(--glass-blur))
-      saturate(var(--glass-saturation));
-    -webkit-backdrop-filter:
-      blur(var(--glass-blur))
-      saturate(var(--glass-saturation));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-card);
   }
@@ -366,14 +373,14 @@
     border-radius: inherit;
     pointer-events: none;
     box-shadow:
-      inset 0  1px 0   var(--glass-highlight),
-      inset 0 -1px 0   rgba(0,0,0,0.04);
+      inset 0 1px 0 var(--glass-highlight),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.04);
     z-index: 1;
   }
   html[data-theme='dark'] .glass-edge::before {
     box-shadow:
-      inset 0  1px 0   rgba(255,255,255,0.08),
-      inset 0 -1px 0   rgba(0,0,0,0.20);
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2);
   }
 
   /* ── Feed item entrance ──────────────────────*/
@@ -382,17 +389,35 @@
   }
 
   @keyframes feed-enter {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* Stagger children */
-  .fade-in-item:nth-child(1) { animation-delay: 0ms; }
-  .fade-in-item:nth-child(2) { animation-delay: 40ms; }
-  .fade-in-item:nth-child(3) { animation-delay: 80ms; }
-  .fade-in-item:nth-child(4) { animation-delay: 120ms; }
-  .fade-in-item:nth-child(5) { animation-delay: 160ms; }
-  .fade-in-item:nth-child(n+6) { animation-delay: 200ms; }
+  .fade-in-item:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .fade-in-item:nth-child(2) {
+    animation-delay: 40ms;
+  }
+  .fade-in-item:nth-child(3) {
+    animation-delay: 80ms;
+  }
+  .fade-in-item:nth-child(4) {
+    animation-delay: 120ms;
+  }
+  .fade-in-item:nth-child(5) {
+    animation-delay: 160ms;
+  }
+  .fade-in-item:nth-child(n + 6) {
+    animation-delay: 200ms;
+  }
 
   /* ── Expand/collapse ─────────────────────────*/
   .expandable-content {
@@ -412,7 +437,7 @@
   /* ── Press animation (iOS feel) ─────────────*/
   .soft-press {
     transition:
-      transform  var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out),
       background var(--dur-fast) var(--ease-out),
       box-shadow var(--dur-base) var(--ease-smooth);
     -webkit-user-select: none;
@@ -451,8 +476,8 @@
     inset-inline-end: var(--back-to-top-offset);
     bottom: var(--back-to-top-offset);
     transition:
-      opacity    var(--dur-base) var(--ease-smooth),
-      transform  var(--dur-base) var(--ease-smooth),
+      opacity var(--dur-base) var(--ease-smooth),
+      transform var(--dur-base) var(--ease-smooth),
       box-shadow var(--dur-base) var(--ease-smooth);
   }
 
@@ -474,8 +499,8 @@
   /* ── Safe-area padding (iPhone notch / Dynamic Island) ── */
   @supports (padding: env(safe-area-inset-bottom)) {
     body {
-      padding-left:   env(safe-area-inset-left);
-      padding-right:  env(safe-area-inset-right);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
   }
 }
@@ -488,16 +513,12 @@
 /* Article cards */
 article.fade-in-item {
   /* Slightly warmer card surface */
-  background: linear-gradient(
-    160deg,
-    var(--surface-0) 0%,
-    var(--surface-1) 100%
-  );
+  background: linear-gradient(160deg, var(--surface-0) 0%, var(--surface-1) 100%);
   border-color: var(--border-soft);
   box-shadow: var(--shadow-card);
   transition:
-    transform    var(--dur-base) var(--ease-smooth),
-    box-shadow   var(--dur-base) var(--ease-smooth),
+    transform var(--dur-base) var(--ease-smooth),
+    box-shadow var(--dur-base) var(--ease-smooth),
     border-color var(--dur-base) var(--ease-smooth);
 }
 
@@ -508,40 +529,28 @@ article.fade-in-item:hover {
 }
 
 html[data-theme='dark'] article.fade-in-item {
-  background: linear-gradient(
-    160deg,
-    var(--surface-1) 0%,
-    var(--surface-2) 100%
-  );
+  background: linear-gradient(160deg, var(--surface-1) 0%, var(--surface-2) 100%);
 }
 
 /* ── Header card ───────────────────────────── */
 header > div {
-  background: linear-gradient(
-    145deg,
-    var(--surface-0) 0%,
-    var(--surface-1) 100%
-  ) !important;
+  background: linear-gradient(145deg, var(--surface-0) 0%, var(--surface-1) 100%) !important;
 }
 
 /* ── Aside panel ───────────────────────────── */
 aside {
-  background: linear-gradient(
-    180deg,
-    var(--surface-1) 0%,
-    var(--surface-2) 100%
-  ) !important;
+  background: linear-gradient(180deg, var(--surface-1) 0%, var(--surface-2) 100%) !important;
 }
 
 /* ── Nav links — Twitter-like pill style ───── */
-nav a[class*="navLink"],
-aside a[class*="navLink"] {
+nav a[class*='navLink'],
+aside a[class*='navLink'] {
   border-radius: var(--radius-md);
   transition:
-    background  var(--dur-fast) var(--ease-out),
-    color       var(--dur-fast) var(--ease-out),
-    transform   var(--dur-fast) var(--ease-out),
-    box-shadow  var(--dur-base) var(--ease-smooth);
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-smooth);
 }
 
 /* ── Theme toggle button ─────────────────────*/
@@ -549,9 +558,9 @@ button[data-theme-toggle] {
   background: var(--surface-3);
   border-color: var(--border-soft);
   transition:
-    background  var(--dur-fast) var(--ease-out),
-    transform   var(--dur-fast) var(--ease-out),
-    box-shadow  var(--dur-base) var(--ease-smooth);
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-smooth);
 }
 button[data-theme-toggle]:hover {
   background: var(--surface-hover);
@@ -563,29 +572,29 @@ button[data-theme-toggle]:active {
 }
 
 /* ── Search input ────────────────────────────*/
-input[type="search"] {
+input[type='search'] {
   background: var(--surface-2);
   border-color: var(--border-soft);
   transition:
     border-color var(--dur-fast) var(--ease-out),
-    background   var(--dur-fast) var(--ease-out),
-    box-shadow   var(--dur-fast) var(--ease-out);
+    background var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
-input[type="search"]:focus {
+input[type='search']:focus {
   background: var(--surface-0);
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 /* ── Pagination links ────────────────────────*/
-a[class*="paginationLink"] {
+a[class*='paginationLink'] {
   transition:
-    color       var(--dur-fast) var(--ease-out),
-    background  var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out),
-    transform   var(--dur-fast) var(--ease-out);
+    transform var(--dur-fast) var(--ease-out);
 }
-a[class*="paginationLink"]:hover {
+a[class*='paginationLink']:hover {
   transform: translateY(-1px);
 }
 
@@ -625,7 +634,7 @@ details[data-comments] > .expandable-content > * {
 }
 
 /* Comments panel */
-div[class*="commentsPanel"] {
+div[class*='commentsPanel'] {
   overflow: hidden;
   max-width: 100%;
   border-radius: var(--radius-md);
@@ -643,17 +652,16 @@ article.fade-in-item {
    search, theme toggle, footer all collapse.
    ─────────────────────────────────────────── */
 @media (max-width: 599px) {
-
   /* ── Feed rhythm ──────────────────────────── */
-  ol[aria-label="Posts"],
-  ol[aria-label="Post"] {
+  ol[aria-label='Posts'],
+  ol[aria-label='Post'] {
     gap: 0.75rem !important;
     margin-top: 0.75rem !important;
   }
 
   /* Card edge padding */
   article.fade-in-item header {
-    padding-left:  14px !important;
+    padding-left: 14px !important;
     padding-right: 14px !important;
   }
 
@@ -665,41 +673,36 @@ article.fade-in-item {
     z-index: 50 !important;
 
     /* Full width, no side borders on edge */
-    width: 100% !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
     min-width: 0 !important;
+    margin-left: calc(50% - 50vw) !important;
+    margin-right: calc(50% - 50vw) !important;
     border-radius: 0 !important;
 
     /* Tighter pill — just enough height */
     padding-block: 0 !important;
 
     /* Stronger glass so content shows behind it */
-    background: linear-gradient(
-      180deg,
-      rgba(242,239,233, 0.94) 0%,
-      rgba(242,239,233, 0.88) 100%
-    ) !important;
+    background: linear-gradient(180deg, rgba(242, 239, 233, 0.94) 0%, rgba(242, 239, 233, 0.88) 100%) !important;
     backdrop-filter: blur(20px) saturate(1.8) !important;
     -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
 
     /* Bottom border only — like iOS nav bar */
-    border-top:    none !important;
-    border-left:   none !important;
-    border-right:  none !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
     border-bottom: 1px solid var(--border-soft) !important;
     border-radius: 0 !important;
 
     box-shadow:
-      0 1px 0   var(--border-soft),
-      0 2px 12px rgba(0,0,0,0.06) !important;
+      0 1px 0 var(--border-soft),
+      0 2px 12px rgba(0, 0, 0, 0.06) !important;
   }
 
   html[data-theme='dark'] aside {
-    background: linear-gradient(
-      180deg,
-      rgba(17,18,20, 0.94) 0%,
-      rgba(22,24,28, 0.88) 100%
-    ) !important;
-    border-bottom-color: rgba(255,255,255,0.07) !important;
+    background: linear-gradient(180deg, rgba(17, 18, 20, 0.94) 0%, rgba(22, 24, 28, 0.88) 100%) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.07) !important;
   }
 
   /* The inner scroll container — let it scroll horizontally */
@@ -714,18 +717,21 @@ article.fade-in-item {
     flex-direction: row !important;
     align-items: center !important;
     gap: 0 !important;
+    padding-inline: 6px !important;
 
     /* Subtle scrollbar hide */
     scrollbar-width: none !important;
+    scroll-padding-inline: 6px !important;
   }
   aside > div::-webkit-scrollbar {
     display: none !important;
   }
 
   /* ── Primary nav — horizontal scrolling row ─ */
-  aside nav[aria-label="Primary navigation"] {
+  aside nav[aria-label='Primary navigation'] {
     flex: 1 1 auto;
     min-width: 0;
+    width: max-content;
   }
 
   /* Nav list: single horizontal row, no wrap */
@@ -739,6 +745,7 @@ article.fade-in-item {
     margin: 0 !important;
     list-style: none !important;
     white-space: nowrap !important;
+    width: max-content !important;
   }
 
   aside nav li {
@@ -760,8 +767,8 @@ article.fade-in-item {
     color: var(--color-muted) !important;
     text-decoration: none !important;
     transition:
-      background  0.15s ease,
-      color       0.15s ease !important;
+      background 0.15s ease,
+      color 0.15s ease !important;
   }
 
   aside nav a:hover {
@@ -772,7 +779,7 @@ article.fade-in-item {
   }
 
   /* Active chip — filled accent style */
-  aside nav a[style*="view-transition-name"],
+  aside nav a[style*='view-transition-name'],
   aside nav a.bg-\[var\(--interactive-active\)\] {
     background: var(--interactive-active) !important;
     color: var(--color-heading) !important;
@@ -782,7 +789,7 @@ article.fade-in-item {
        show just the inline search form ──────── */
   /* Hide the emoji 🔍 label toggle on mobile
      (replaced by the inline form that's always visible) */
-  label[for="search-toggle"] {
+  label[for='search-toggle'] {
     display: none !important;
   }
 
@@ -792,7 +799,7 @@ article.fade-in-item {
   }
 
   /* Search form — compact, separated from nav chips by a thin divider */
-  aside form[role="search"] {
+  aside form[role='search'] {
     display: flex !important;
     align-items: center !important;
     flex: 0 0 auto !important;
@@ -806,7 +813,7 @@ article.fade-in-item {
     background: transparent !important;
   }
 
-  aside form[role="search"] input[type="search"] {
+  aside form[role='search'] input[type='search'] {
     width: 80px !important;
     height: 30px !important;
     font-size: 12.5px !important;
@@ -814,11 +821,13 @@ article.fade-in-item {
     border-radius: 99px !important;
     border: 1px solid var(--border-soft) !important;
     background: var(--surface-2) !important;
-    transition: width 0.22s ease, background 0.15s ease,
-                border-color 0.15s ease !important;
+    transition:
+      width 0.22s ease,
+      background 0.15s ease,
+      border-color 0.15s ease !important;
   }
 
-  aside form[role="search"] input[type="search"]:focus {
+  aside form[role='search'] input[type='search']:focus {
     width: 130px !important;
     background: var(--surface-0) !important;
     border-color: var(--color-accent) !important;
@@ -835,7 +844,7 @@ article.fade-in-item {
     padding: 0 !important;
     margin: 0 8px 0 2px !important;
     border-radius: 99px !important;
-    font-size: 0 !important;           /* hide text */
+    font-size: 0 !important; /* hide text */
     overflow: hidden !important;
     position: relative !important;
   }
@@ -866,15 +875,15 @@ article.fade-in-item {
   }
 
   /* ── Comment section ─────────────────────── */
-  section[aria-label="Comments"] {
+  section[aria-label='Comments'] {
     padding: 10px 14px !important;
     /* Clip anything the Telegram widget tries to overflow with */
     overflow: hidden !important;
   }
 
   /* The expandable container must also clip */
-  section[aria-label="Comments"] .expandable-content,
-  section[aria-label="Comments"] .expandable-content > * {
+  section[aria-label='Comments'] .expandable-content,
+  section[aria-label='Comments'] .expandable-content > * {
     overflow: hidden !important;
     max-width: 100% !important;
   }
@@ -898,7 +907,7 @@ article.fade-in-item {
   }
 
   /* Comment panel itself */
-  div[class*="commentsPanel"] {
+  div[class*='commentsPanel'] {
     overflow: hidden !important;
     max-width: 100% !important;
     padding: 8px !important;
@@ -911,40 +920,50 @@ article.fade-in-item {
   }
 
   /* ── Reaction pills ──────────────────────── */
-  div[class*="reactionList"] { gap: 4px; }
+  div[class*='reactionList'] {
+    gap: 4px;
+  }
 
-  span[class*="reactionPill"] {
+  span[class*='reactionPill'] {
     padding: 2px 6px 2px 5px;
     font-size: 11px;
   }
 
   /* ── Tags ────────────────────────────────── */
-  footer[class*="tagBox"] { gap: 5px; }
+  footer[class*='tagBox'] {
+    gap: 5px;
+  }
 
-  a[class*="tagLink"] {
+  a[class*='tagLink'] {
     padding: 2px 8px;
     font-size: 12px;
   }
 
   /* ── Pagination ──────────────────────────── */
-  nav[aria-label="Pagination"] { margin-block: 12px; }
+  nav[aria-label='Pagination'] {
+    margin-block: 12px;
+  }
 
   /* ── Back to top ─────────────────────────── */
-  #back-to-top-wrapper { inset-inline-end: 12px; }
-  #back-to-top         { inset-inline-end: 12px; }
+  #back-to-top-wrapper {
+    inset-inline-end: 12px;
+  }
+  #back-to-top {
+    inset-inline-end: 12px;
+  }
 }
 
 /* ── Reaction pills — premium styling ─────── */
-span[class*="reactionPill"] {
+span[class*='reactionPill'] {
   background: var(--surface-2);
   border-color: var(--border-soft);
   backdrop-filter: blur(8px);
   transition:
-    background   var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out),
-    transform    var(--dur-fast) var(--ease-out);
+    transform var(--dur-fast) var(--ease-out);
 }
-span[class*="reactionPill"]:hover {
+span[class*='reactionPill']:hover {
   background: var(--surface-hover);
   transform: scale(1.04);
 }
@@ -977,19 +996,17 @@ span[class*="reactionPill"]:hover {
 /* ── Modal — cinematic backdrop ─────────────*/
 .modal {
   background-color: rgba(0, 0, 0, 0.88) !important;
-  backdrop-filter:
-    blur(28px) saturate(1.2) !important;
-  -webkit-backdrop-filter:
-    blur(28px) saturate(1.2) !important;
+  backdrop-filter: blur(28px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.2) !important;
 }
 
 .modal__close {
   background: rgba(30, 30, 30, 0.85) !important;
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   transition:
-    background  var(--dur-fast) var(--ease-out),
-    transform   var(--dur-fast) var(--ease-out);
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
 }
 .modal__close:hover {
   background: rgba(50, 50, 50, 0.92) !important;
@@ -1002,8 +1019,14 @@ span[class*="reactionPill"]:hover {
 }
 
 @keyframes modal-surface-enter {
-  from { transform: scale(0.94); opacity: 0; }
-  to   { transform: scale(1);    opacity: 1; }
+  from {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* ── Expandable blockquote ───────────────────*/
@@ -1029,13 +1052,19 @@ pre {
 }
 
 html[data-theme='dark'] pre {
-  background: rgba(15, 15, 18, 0.70) !important;
+  background: rgba(15, 15, 18, 0.7) !important;
 }
 
 /* ── View-transition polish ──────────────────*/
 @keyframes slide-in-right {
-  from { transform: translateX(6px); opacity: 0; }
-  to   { transform: translateX(0);   opacity: 1; }
+  from {
+    transform: translateX(6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 ::view-transition-new(post-*) {
