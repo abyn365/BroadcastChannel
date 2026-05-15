@@ -680,7 +680,8 @@ article.fade-in-item {
     margin-right: calc(50% - 50vw) !important;
     border-radius: 0 !important;
 
-    /* Tighter pill — just enough height */
+    /* Tighter pill — scales a bit with viewport */
+    min-height: clamp(42px, 9.5vw, 52px) !important;
     padding-block: 0 !important;
 
     /* Stronger glass so content shows behind it */
@@ -718,6 +719,8 @@ article.fade-in-item {
     align-items: center !important;
     gap: 0 !important;
     padding-inline: 6px !important;
+    width: 100% !important;
+    min-width: 0 !important;
 
     /* Subtle scrollbar hide */
     scrollbar-width: none !important;
@@ -732,6 +735,7 @@ article.fade-in-item {
     flex: 1 1 auto;
     min-width: 0;
     width: max-content;
+    max-width: min(62vw, 360px);
   }
 
   /* Nav list: single horizontal row, no wrap */
@@ -806,6 +810,7 @@ article.fade-in-item {
     min-width: 0 !important;
     margin: 0 !important;
     padding: 6px 6px 6px 4px !important;
+    max-width: min(34vw, 240px) !important;
     border-left: 1px solid var(--border-soft) !important;
     border-top: none !important;
     border-right: none !important;
@@ -840,7 +845,7 @@ article.fade-in-item {
   /* ── Theme toggle — icon-only pill ──────────*/
   button[data-theme-toggle] {
     flex: 0 0 auto !important;
-    width: 32px !important;
+    width: clamp(30px, 8.2vw, 36px) !important;
     height: 32px !important;
     min-height: unset !important;
     padding: 0 !important;
