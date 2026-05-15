@@ -7,10 +7,13 @@ const TARGET_WHITELIST = [
   'telesco.pe',
   'yandex.ru',
 ]
+const MALFORMED_PROTOCOL_REGEX = /^https?:\/(?!\/)/i
 
 export function resolveStaticProxyTarget(rawTarget: string): URL {
-  const normalizedTarget = rawTarget.startsWith('//') ? `https:${rawTarget}` : rawTarget
-  return new URL(normalizedTarget)
+  const normalizedTarget = rawTarget
+    .replace(MALFORMED_PROTOCOL_REGEX, protocol => `${protocol}/`)
+  const resolvedTarget = normalizedTarget.startsWith('//') ? `https:${normalizedTarget}` : normalizedTarget
+  return new URL(resolvedTarget)
 }
 
 export function isStaticProxyWhitelisted(target: URL): boolean {
@@ -25,5 +28,17 @@ export async function createStaticProxyResponse(request: Request, rawTarget: str
   }
 
   const response = await fetch(target.toString(), request)
-  return new Response(response.body, response)
+  const headers = new Headers(response.headers)
+
+  // Telegram CDN sometimes sends document-oriented security headers that can
+  // prevent proxied media from being rendered as <img> resources.
+  headers.delete('content-security-policy')
+  headers.delete('content-security-policy-report-only')
+  headers.delete('x-frame-options')
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
 }

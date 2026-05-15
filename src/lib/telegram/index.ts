@@ -6,8 +6,9 @@ import { LRUCache } from 'lru-cache'
 import { $fetch } from 'ofetch'
 import { getEnv } from '../env'
 import prism from '../prism'
+import { isStaticProxyWhitelisted, resolveStaticProxyTarget } from '../static-proxy'
 
-const STYLE_URL_REGEX = /url\(["'](.*?)["']/i
+const STYLE_URL_REGEX = /url\((['"]?)(.*?)\1\)/i
 const STYLE_DIMENSION_REGEX = {
   width: /width:\s*(\d+(?:\.\d+)?)px/i,
   height: /height:\s*(\d+(?:\.\d+)?)px/i,
@@ -119,6 +120,28 @@ function getStyleDimension(style: string | undefined, property: 'width' | 'heigh
 function getStylePaddingTop(style: string | undefined): number | null {
   const value = style?.match(STYLE_PADDING_TOP_REGEX)?.[1]
   return value ? Number(value) : null
+}
+
+function hasSelfOrDescendant(element: Cheerio<AnyNode>, selector: string): boolean {
+  return element.is(selector) || element.find(selector).length > 0
+}
+
+function getMediaSrc(rawUrl: string, staticProxy = ''): string {
+  if (!rawUrl) {
+    return ''
+  }
+
+  if (!staticProxy) {
+    return rawUrl
+  }
+
+  try {
+    const target = resolveStaticProxyTarget(rawUrl)
+    return isStaticProxyWhitelisted(target) ? `${staticProxy}${target.toString()}` : target.toString()
+  }
+  catch {
+    return `${staticProxy}${rawUrl}`
+  }
 }
 
 // Telegram widgets encode image ratios in styles, so this returns synthetic
@@ -242,7 +265,7 @@ function getImages($: CheerioAPI, message: MessageSelection, options: MessageAss
   const safeCloseLabel = 'Close image preview'
 
   for (const [photoIndex, photoNode] of message.find('.tgme_widget_message_photo_wrap').toArray().entries()) {
-    const imageUrl = $(photoNode).attr('style')?.match(STYLE_URL_REGEX)?.[1]
+    const imageUrl = $(photoNode).attr('style')?.match(STYLE_URL_REGEX)?.[2]
 
     if (!imageUrl) {
       continue
@@ -345,12 +368,26 @@ function getLinkPreview($: CheerioAPI, message: MessageSelection, options: Index
   link.attr('target', '_blank').attr('rel', 'noopener').attr('title', description)
 
   const image = message.find('.link_preview_image')
-  const previewUrl = image.attr('style')?.match(STYLE_URL_REGEX)?.[1]
-  const imageSrc = previewUrl ? staticProxy + previewUrl : ''
+  const imageWrap = message.find('.link_preview_image_wrap')
+  const previewUrl
+    = image.attr('style')?.match(STYLE_URL_REGEX)?.[2]
+      || message.find('.link_preview_image_wrap i').attr('style')?.match(STYLE_URL_REGEX)?.[2]
+      || message.find('.link_preview_image img').attr('src')
+      || imageWrap.find('img').attr('src')
 
-  image.replaceWith(
-    `<img class="link_preview_image" alt="${safeTitle}" src="${imageSrc}" width="1200" height="630" loading="${loading}" />`,
-  )
+  if (previewUrl) {
+    const imageSrc = getMediaSrc(previewUrl, staticProxy)
+    const previewImage = `<img class="link_preview_image" alt="${safeTitle}" src="${imageSrc}" width="1200" height="630" loading="${loading}" />`
+    // Normalize Telegram's varying preview-image markup into one predictable
+    // inline image so CSS/visibility logic always targets the same element.
+    link.find('.link_preview_image, .link_preview_image_wrap, .link_preview_photo, .link_preview_photo_wrap').remove()
+    link.prepend(previewImage)
+
+    link.addClass('tgme_widget_message_link_preview--image')
+  }
+  else if (message.find('.link_preview_site_name').length || title || description) {
+    link.addClass('tgme_widget_message_link_preview--text')
+  }
 
   return $.html(link)
 }
@@ -492,12 +529,35 @@ async function extractPost($: CheerioAPI, item: AnyNode | null, options: Extract
     }
   }
 
-  const contentHtml = [
-    getReply($, message, { channel }),
+  const messageBody = message.find('.tgme_widget_message_bubble')
+  const bubbleChildren = messageBody.children().toArray()
+  const textSelector = hasReplyText ? '.tgme_widget_message_text.js-message_text' : '.tgme_widget_message_text'
+  const mediaSelector = [
+    '.tgme_widget_message_photo_wrap',
+    '.tgme_widget_message_video_wrap',
+    '.tgme_widget_message_roundvideo_wrap',
+    '.tgme_widget_message_voice',
+    '.tgme_widget_message_sticker',
+    '.js-videosticker_video',
+    '.tgme_widget_message_poll',
+    '.tgme_widget_message_document_wrap',
+    '.tgme_widget_message_video_player.not_supported',
+    '.tgme_widget_message_location_wrap',
+    '.tgme_widget_message_link_preview',
+  ].join(',')
+
+  const textNodeIndex = bubbleChildren.findIndex(node => hasSelfOrDescendant($(node), textSelector))
+  const firstMediaNodeIndex = bubbleChildren.findIndex(node => hasSelfOrDescendant($(node), mediaSelector))
+
+  const textBeforeMedia
+    = textNodeIndex >= 0
+      && firstMediaNodeIndex >= 0
+      && textNodeIndex < firstMediaNodeIndex
+
+  const mediaContent = [
     getImages($, message, { staticProxy, id, index, title }),
     getVideo($, message, { staticProxy, index }),
     getAudio($, message, { staticProxy }),
-    content.html(),
     getImageStickers($, message, { staticProxy, index }),
     getVideoStickers($, message, { staticProxy, index }),
     message.find('.tgme_widget_message_poll').html(),
@@ -505,6 +565,14 @@ async function extractPost($: CheerioAPI, item: AnyNode | null, options: Extract
     $.html(message.find('.tgme_widget_message_video_player.not_supported')),
     $.html(message.find('.tgme_widget_message_location_wrap')),
     getLinkPreview($, message, { staticProxy, index }),
+  ]
+    .filter(isNonEmptyString)
+    .join('')
+
+  const contentHtml = [
+    getReply($, message, { channel }),
+    textBeforeMedia ? content.html() : mediaContent,
+    textBeforeMedia ? mediaContent : content.html(),
   ]
     .filter(isNonEmptyString)
     .join('')
