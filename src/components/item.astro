@@ -113,6 +113,8 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
               <div
                 data-comments-app
                 data-comments-app-website="FLEpfHon"
+                data-page-id={`${channel}/${post.id}`}
+                data-page-url={`${SITE_URL}posts/${post.id}`}
                 data-limit="5"
                 data-color="F95C54"
                 data-dislikes="1"
@@ -141,6 +143,8 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       script.async = true
       script.src = widgetSrc
       script.setAttribute('data-comments-app-website', website)
+      script.setAttribute('data-page-id', target.dataset.pageId || '')
+      script.setAttribute('data-page-url', target.dataset.pageUrl || window.location.href)
       script.setAttribute('data-limit', target.dataset.limit || '5')
       script.setAttribute('data-color', target.dataset.color || 'F95C54')
       script.setAttribute('data-dislikes', target.dataset.dislikes || '1')
@@ -157,9 +161,19 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       }
 
       const meta = details.querySelector('[data-comments-meta]')
-      renderWidget(target)
+      let rendered = false
+
+      if (details.open) {
+        renderWidget(target)
+        rendered = true
+      }
 
       details.addEventListener('toggle', () => {
+        if (details.open && !rendered) {
+          renderWidget(target)
+          rendered = true
+        }
+
         if (meta instanceof HTMLElement) {
           meta.textContent = details.open ? 'Discussion expanded' : 'Latest replies preview'
         }
