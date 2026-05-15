@@ -3,7 +3,8 @@ import { createStaticProxyResponse } from '../../lib/static-proxy'
 
 export const GET: APIRoute = async ({ request, params, url }) => {
   try {
-    const rawTarget = (params.url ?? '') + url.search
+    const encodedTarget = params.url ?? ''
+    const rawTarget = `${decodeURIComponent(encodedTarget)}${url.search}`
     return await createStaticProxyResponse(request, rawTarget)
   }
   catch (error) {

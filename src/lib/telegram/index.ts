@@ -137,7 +137,7 @@ function getMediaSrc(rawUrl: string, staticProxy = ''): string {
 
   try {
     const target = resolveStaticProxyTarget(rawUrl)
-    return isStaticProxyWhitelisted(target) ? `${staticProxy}${target.toString()}` : target.toString()
+    return isStaticProxyWhitelisted(target) ? `${staticProxy}${encodeURIComponent(target.toString())}` : target.toString()
   }
   catch {
     return `${staticProxy}${rawUrl}`
