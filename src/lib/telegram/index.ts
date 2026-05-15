@@ -121,6 +121,10 @@ function getStylePaddingTop(style: string | undefined): number | null {
   return value ? Number(value) : null
 }
 
+function hasSelfOrDescendant(element: Cheerio<AnyNode>, selector: string): boolean {
+  return element.is(selector) || element.find(selector).length > 0
+}
+
 // Telegram widgets encode image ratios in styles, so this returns synthetic
 // dimensions for layout reservation rather than real pixel dimensions.
 function inferImageDimensions(
@@ -496,24 +500,24 @@ async function extractPost($: CheerioAPI, item: AnyNode | null, options: Extract
   }
 
   const messageBody = message.find('.tgme_widget_message_bubble')
-  const textNode = message.find(hasReplyText ? '.tgme_widget_message_text.js-message_text' : '.tgme_widget_message_text').first()
-  const textNodeIndex = textNode.parent().children().toArray().findIndex(node => node === textNode.get(0))
-  const firstMediaNodeIndex = messageBody.children().toArray().findIndex((node) => {
-    const element = $(node)
-    return element.find([
-      '.tgme_widget_message_photo_wrap',
-      '.tgme_widget_message_video_wrap',
-      '.tgme_widget_message_roundvideo_wrap',
-      '.tgme_widget_message_voice',
-      '.tgme_widget_message_sticker',
-      '.js-videosticker_video',
-      '.tgme_widget_message_poll',
-      '.tgme_widget_message_document_wrap',
-      '.tgme_widget_message_video_player.not_supported',
-      '.tgme_widget_message_location_wrap',
-      '.tgme_widget_message_link_preview',
-    ].join(',')).length > 0
-  })
+  const bubbleChildren = messageBody.children().toArray()
+  const textSelector = hasReplyText ? '.tgme_widget_message_text.js-message_text' : '.tgme_widget_message_text'
+  const mediaSelector = [
+    '.tgme_widget_message_photo_wrap',
+    '.tgme_widget_message_video_wrap',
+    '.tgme_widget_message_roundvideo_wrap',
+    '.tgme_widget_message_voice',
+    '.tgme_widget_message_sticker',
+    '.js-videosticker_video',
+    '.tgme_widget_message_poll',
+    '.tgme_widget_message_document_wrap',
+    '.tgme_widget_message_video_player.not_supported',
+    '.tgme_widget_message_location_wrap',
+    '.tgme_widget_message_link_preview',
+  ].join(',')
+
+  const textNodeIndex = bubbleChildren.findIndex(node => hasSelfOrDescendant($(node), textSelector))
+  const firstMediaNodeIndex = bubbleChildren.findIndex(node => hasSelfOrDescendant($(node), mediaSelector))
 
   const textBeforeMedia
     = textNodeIndex >= 0
