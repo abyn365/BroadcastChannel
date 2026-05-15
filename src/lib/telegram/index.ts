@@ -378,16 +378,10 @@ function getLinkPreview($: CheerioAPI, message: MessageSelection, options: Index
   if (previewUrl) {
     const imageSrc = getMediaSrc(previewUrl, staticProxy)
     const previewImage = `<img class="link_preview_image" alt="${safeTitle}" src="${imageSrc}" width="1200" height="630" loading="${loading}" />`
-
-    if (image.length) {
-      image.replaceWith(previewImage)
-    }
-    else if (imageWrap.length) {
-      imageWrap.empty().append(previewImage)
-    }
-    else {
-      link.prepend(previewImage)
-    }
+    // Normalize Telegram's varying preview-image markup into one predictable
+    // inline image so CSS/visibility logic always targets the same element.
+    link.find('.link_preview_image, .link_preview_image_wrap, .link_preview_photo, .link_preview_photo_wrap').remove()
+    link.prepend(previewImage)
 
     link.addClass('tgme_widget_message_link_preview--image')
   }
