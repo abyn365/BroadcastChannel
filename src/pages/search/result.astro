@@ -1,14 +1,176 @@
 ---
-import List from '../../components/list.astro'
+import Header from '../../components/header.astro'
+import Layout from '../../layouts/base.astro'
 import { getChannelInfo } from '../../lib/telegram'
 
 const query = Astro.url.searchParams.get('q')?.trim() ?? ''
-const channel = await getChannelInfo(Astro, { q: query })
+const channel = await getChannelInfo(Astro, query ? { q: query } : undefined)
+
 channel.seo = {
   title: query ? `Search: ${query}` : 'Search',
   noindex: true,
 }
-const pageHeading = query ? `Search results for “${query}”` : 'Search results'
+
+const posts = channel.posts ?? []
 ---
 
-<List channel={channel} before={false} after={false} pageHeading={pageHeading} />
+<Layout channel={channel}>
+  <Header channel={channel} />
+  <section
+    class="space-y-4 rounded-[24px] border border-line bg-surface/95 p-5 shadow-soft"
+    aria-labelledby="search-title"
+  >
+    <div class="space-y-2">
+      <p class="m-0 text-xs font-semibold uppercase tracking-[0.14em] text-muted">On-site Search</p>
+      <h1 id="search-title" class="m-0 text-2xl font-semibold text-heading">Find posts instantly</h1>
+      <p class="m-0 text-sm text-muted">Search this site directly with live results. No Google redirects.</p>
+    </div>
+
+    <form
+      class="flex flex-col gap-3 sm:flex-row"
+      action="/search/result"
+      method="get"
+      role="search"
+      data-live-search-form
+    >
+      <label for="live-search-query" class="sr-only">Search posts</label>
+      <input
+        id="live-search-query"
+        name="q"
+        type="search"
+        value={query}
+        placeholder="Search by keyword or #tag"
+        class="w-full rounded-[14px] border border-line bg-paper px-4 py-3 text-[16px] text-heading outline-none placeholder:text-muted focus:border-accent"
+        autocomplete="off"
+      />
+      <button
+        type="submit"
+        class="inline-flex min-h-12 items-center justify-center rounded-[14px] bg-heading px-5 py-3 text-sm font-semibold text-paper transition hover:opacity-90"
+      >
+        Search
+      </button>
+    </form>
+
+    <p class="m-0 text-sm text-muted" data-live-search-status>
+      {
+        query
+          ? `Showing ${posts.length} result${posts.length === 1 ? '' : 's'} for “${query}”.`
+          : 'Start typing to search posts.'
+      }
+    </p>
+  </section>
+
+  <section class="mt-5 space-y-3" aria-live="polite" aria-busy="false" data-live-search-results>
+    {
+      posts.map((post) => (
+        <article class="rounded-[20px] border border-line bg-surface p-4 shadow-soft">
+          <a class="text-base font-semibold text-heading" href={`/posts/${post.id}`}>
+            {post.title || `Post #${post.id}`}
+          </a>
+          <p class="mt-2 text-sm text-muted">{post.text}</p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            {post.tags.map((tag) => (
+              <span class="rounded-full bg-code px-2 py-1 text-xs text-muted">#{tag}</span>
+            ))}
+          </div>
+        </article>
+      ))
+    }
+  </section>
+
+  <script is:inline>
+    ;(() => {
+      const form = document.querySelector('[data-live-search-form]')
+      if (!form) {
+        return
+      }
+
+      const input = form.querySelector('input[name="q"]')
+      const status = document.querySelector('[data-live-search-status]')
+      const list = document.querySelector('[data-live-search-results]')
+      let timer = 0
+      let requestId = 0
+
+      const escapeHtml = (value) =>
+        value
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;')
+
+      const render = (posts) => {
+        if (!list) {
+          return
+        }
+
+        if (!posts.length) {
+          list.innerHTML = '<p class="text-sm text-muted">No posts found.</p>'
+          return
+        }
+
+        list.innerHTML = posts
+          .map((post) => {
+            const tags = (post.tags || [])
+              .map(
+                (tag) => `<span class="rounded-full bg-code px-2 py-1 text-xs text-muted">#${escapeHtml(tag)}</span>`,
+              )
+              .join('')
+
+            return `<article class="rounded-[20px] border border-line bg-surface p-4 shadow-soft">
+            <a class="text-base font-semibold text-heading" href="/posts/${escapeHtml(post.id)}">${escapeHtml(post.title || `Post #${post.id}`)}</a>
+            <p class="mt-2 text-sm text-muted">${escapeHtml(post.text || '')}</p>
+            <div class="mt-3 flex flex-wrap gap-2">${tags}</div>
+          </article>`
+          })
+          .join('')
+      }
+
+      const run = async () => {
+        if (!input || !status || !list) {
+          return
+        }
+
+        const query = input.value.trim()
+        clearTimeout(timer)
+
+        timer = window.setTimeout(async () => {
+          if (!query) {
+            status.textContent = 'Start typing to search posts.'
+            list.innerHTML = ''
+            const url = new URL(window.location.href)
+            url.searchParams.delete('q')
+            window.history.replaceState({}, '', url)
+            return
+          }
+
+          requestId += 1
+          const current = requestId
+          list.setAttribute('aria-busy', 'true')
+          status.textContent = `Searching for “${query}”…`
+
+          const response = await fetch(`/api/search.json?q=${encodeURIComponent(query)}`)
+          const data = await response.json()
+          if (current !== requestId) {
+            return
+          }
+
+          render(data.posts || [])
+          const count = (data.posts || []).length
+          status.textContent = `Showing ${count} result${count === 1 ? '' : 's'} for “${query}”.`
+          list.setAttribute('aria-busy', 'false')
+
+          const url = new URL(window.location.href)
+          url.searchParams.set('q', query)
+          window.history.replaceState({}, '', url)
+        }, 180)
+      }
+
+      input?.addEventListener('input', run)
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault()
+        await run()
+      })
+    })()
+  </script>
+</Layout>
