@@ -345,7 +345,10 @@ function getLinkPreview($: CheerioAPI, message: MessageSelection, options: Index
   link.attr('target', '_blank').attr('rel', 'noopener').attr('title', description)
 
   const image = message.find('.link_preview_image')
-  const previewUrl = image.attr('style')?.match(STYLE_URL_REGEX)?.[1]
+  const previewUrl
+    = image.attr('style')?.match(STYLE_URL_REGEX)?.[1]
+      || message.find('.link_preview_image_wrap i').attr('style')?.match(STYLE_URL_REGEX)?.[1]
+      || message.find('.link_preview_image img').attr('src')
   const imageSrc = previewUrl ? staticProxy + previewUrl : ''
 
   image.replaceWith(
@@ -492,12 +495,35 @@ async function extractPost($: CheerioAPI, item: AnyNode | null, options: Extract
     }
   }
 
-  const contentHtml = [
-    getReply($, message, { channel }),
+  const messageBody = message.find('.tgme_widget_message_bubble')
+  const textNode = message.find(hasReplyText ? '.tgme_widget_message_text.js-message_text' : '.tgme_widget_message_text').first()
+  const textNodeIndex = textNode.parent().children().toArray().findIndex(node => node === textNode.get(0))
+  const firstMediaNodeIndex = messageBody.children().toArray().findIndex((node) => {
+    const element = $(node)
+    return element.find([
+      '.tgme_widget_message_photo_wrap',
+      '.tgme_widget_message_video_wrap',
+      '.tgme_widget_message_roundvideo_wrap',
+      '.tgme_widget_message_voice',
+      '.tgme_widget_message_sticker',
+      '.js-videosticker_video',
+      '.tgme_widget_message_poll',
+      '.tgme_widget_message_document_wrap',
+      '.tgme_widget_message_video_player.not_supported',
+      '.tgme_widget_message_location_wrap',
+      '.tgme_widget_message_link_preview',
+    ].join(',')).length > 0
+  })
+
+  const textBeforeMedia
+    = textNodeIndex >= 0
+      && firstMediaNodeIndex >= 0
+      && textNodeIndex < firstMediaNodeIndex
+
+  const mediaContent = [
     getImages($, message, { staticProxy, id, index, title }),
     getVideo($, message, { staticProxy, index }),
     getAudio($, message, { staticProxy }),
-    content.html(),
     getImageStickers($, message, { staticProxy, index }),
     getVideoStickers($, message, { staticProxy, index }),
     message.find('.tgme_widget_message_poll').html(),
@@ -505,6 +531,14 @@ async function extractPost($: CheerioAPI, item: AnyNode | null, options: Extract
     $.html(message.find('.tgme_widget_message_video_player.not_supported')),
     $.html(message.find('.tgme_widget_message_location_wrap')),
     getLinkPreview($, message, { staticProxy, index }),
+  ]
+    .filter(isNonEmptyString)
+    .join('')
+
+  const contentHtml = [
+    getReply($, message, { channel }),
+    textBeforeMedia ? content.html() : mediaContent,
+    textBeforeMedia ? mediaContent : content.html(),
   ]
     .filter(isNonEmptyString)
     .join('')
