@@ -192,68 +192,80 @@
   }
 
   /* ── Bokeh orb layer ─────────────────────────
-     Two fixed pseudo-elements on <html> create
-     large soft gradient orbs that drift slowly.
-     They sit behind everything (z-index 0).     */
-  html::before,
-  html::after {
-    content: '';
+     Independent fixed orb elements are injected
+     into the DOM and animated individually.     */
+  .orb-layer {
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 0;
+  }
+
+  .orb {
+    position: absolute;
+    left: var(--orb-x, 50%);
+    top: var(--orb-y, 50%);
+    width: var(--orb-size, 42vmax);
+    aspect-ratio: 1 / 1;
+    border-radius: 999px;
+    background: var(--orb-gradient);
+    opacity: var(--orb-opacity, 0.7);
+    mix-blend-mode: multiply;
+    filter: blur(var(--orb-blur, 6px));
+    transform: translate(-50%, -50%);
     will-change: transform;
   }
 
-  /* Orb cluster A — top-left coral + bottom-right lilac */
-  html::before {
-    background:
-      radial-gradient(ellipse 55% 45% at 12% 8%,
-        rgba(210, 100, 60, 0.13) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 50% at 88% 82%,
-        rgba(150, 120, 200, 0.09) 0%, transparent 65%);
-    animation: orb-a 28s ease-in-out infinite alternate;
+  /* Orb A — coral */
+  .orb--a {
+    --orb-gradient: radial-gradient(circle at 40% 38%, rgba(210, 100, 60, 0.22) 0%, rgba(210, 100, 60, 0) 68%);
+    animation: orb-a var(--orb-duration, 28s) ease-in-out infinite alternate;
   }
 
-  /* Orb cluster B — top-right blue + bottom-left amber */
-  html::after {
-    background:
-      radial-gradient(ellipse 50% 40% at 78% 15%,
-        rgba(100, 150, 220, 0.08) 0%, transparent 65%),
-      radial-gradient(ellipse 45% 55% at 22% 90%,
-        rgba(190, 140, 80, 0.09) 0%, transparent 60%);
-    animation: orb-b 34s ease-in-out infinite alternate;
+  /* Orb B — cool blue */
+  .orb--b {
+    --orb-gradient: radial-gradient(circle at 52% 48%, rgba(100, 150, 220, 0.18) 0%, rgba(100, 150, 220, 0) 70%);
+    animation: orb-b var(--orb-duration, 34s) ease-in-out infinite alternate;
+  }
+
+  /* Orb C — lilac */
+  .orb--c {
+    --orb-gradient: radial-gradient(circle at 50% 42%, rgba(150, 120, 200, 0.2) 0%, rgba(150, 120, 200, 0) 69%);
+    animation: orb-c var(--orb-duration, 40s) ease-in-out infinite alternate;
   }
 
   @keyframes orb-a {
-    0%   { transform: translate(  0px,   0px) scale(1);    }
-    33%  { transform: translate( 40px, -30px) scale(1.04); }
-    66%  { transform: translate(-20px,  50px) scale(0.97); }
-    100% { transform: translate( 30px,  20px) scale(1.02); }
+    0%   { transform: translate(-50%, -50%) translate(0, 0) scale(1); }
+    33%  { transform: translate(-50%, -50%) translate(40px, -30px) scale(1.04); }
+    66%  { transform: translate(-50%, -50%) translate(-20px, 50px) scale(0.97); }
+    100% { transform: translate(-50%, -50%) translate(30px, 20px) scale(1.02); }
   }
 
   @keyframes orb-b {
-    0%   { transform: translate(  0px,   0px) scale(1);    }
-    33%  { transform: translate(-50px,  30px) scale(1.03); }
-    66%  { transform: translate( 25px, -40px) scale(0.98); }
-    100% { transform: translate(-20px,  15px) scale(1.01); }
+    0%   { transform: translate(-50%, -50%) translate(0, 0) scale(1); }
+    33%  { transform: translate(-50%, -50%) translate(-50px, 30px) scale(1.03); }
+    66%  { transform: translate(-50%, -50%) translate(25px, -40px) scale(0.98); }
+    100% { transform: translate(-50%, -50%) translate(-20px, 15px) scale(1.01); }
+  }
+
+  @keyframes orb-c {
+    0%   { transform: translate(-50%, -50%) translate(0, 0) scale(1); }
+    33%  { transform: translate(-50%, -50%) translate(30px, 35px) scale(1.05); }
+    66%  { transform: translate(-50%, -50%) translate(-35px, -25px) scale(0.96); }
+    100% { transform: translate(-50%, -50%) translate(15px, -10px) scale(1.02); }
   }
 
   /* Dark mode orbs — deeper, cooler tones */
-  html[data-theme='dark']::before {
-    background:
-      radial-gradient(ellipse 55% 45% at 12% 8%,
-        rgba(180, 70, 40, 0.14) 0%, transparent 70%),
-      radial-gradient(ellipse 40% 50% at 88% 82%,
-        rgba(80, 60, 140, 0.12) 0%, transparent 65%);
+  html[data-theme='dark'] .orb--a {
+    --orb-gradient: radial-gradient(circle at 40% 38%, rgba(180, 70, 40, 0.24) 0%, rgba(180, 70, 40, 0) 70%);
   }
 
-  html[data-theme='dark']::after {
-    background:
-      radial-gradient(ellipse 50% 40% at 78% 15%,
-        rgba(40, 80, 160, 0.10) 0%, transparent 65%),
-      radial-gradient(ellipse 45% 55% at 22% 90%,
-        rgba(140, 90, 30, 0.10) 0%, transparent 60%);
+  html[data-theme='dark'] .orb--b {
+    --orb-gradient: radial-gradient(circle at 52% 48%, rgba(40, 80, 160, 0.18) 0%, rgba(40, 80, 160, 0) 68%);
+  }
+
+  html[data-theme='dark'] .orb--c {
+    --orb-gradient: radial-gradient(circle at 50% 42%, rgba(120, 70, 170, 0.2) 0%, rgba(120, 70, 170, 0) 68%);
   }
 
   /* Ensure all content sits above the orb layer */

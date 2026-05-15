@@ -155,6 +155,33 @@ const themeToggleClass =
   </head>
 
   <body>
+    <script is:inline>
+      ;(() => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+        const random = (min, max) => Math.random() * (max - min) + min
+        const pick = (list) => list[Math.floor(Math.random() * list.length)]
+        const orbTypes = ['orb--a', 'orb--b', 'orb--c']
+        const layer = document.createElement('div')
+        layer.className = 'orb-layer'
+        layer.setAttribute('aria-hidden', 'true')
+
+        for (let i = 0; i < 7; i += 1) {
+          const orb = document.createElement('div')
+          orb.className = `orb ${pick(orbTypes)}`
+          orb.style.setProperty('--orb-x', `${random(8, 92).toFixed(2)}%`)
+          orb.style.setProperty('--orb-y', `${random(8, 92).toFixed(2)}%`)
+          orb.style.setProperty('--orb-size', `${random(26, 52).toFixed(2)}vmax`)
+          orb.style.setProperty('--orb-duration', `${random(24, 52).toFixed(2)}s`)
+          orb.style.setProperty('--orb-opacity', `${random(0.45, 0.85).toFixed(2)}`)
+          orb.style.setProperty('--orb-blur', `${random(4, 14).toFixed(2)}px`)
+          orb.style.animationDelay = `-${random(0, 40).toFixed(2)}s`
+          layer.append(orb)
+        }
+
+        document.body.prepend(layer)
+      })()
+    </script>
     <a href="#main-content" class={skipLinkClass}>{skipLinkText}</a>
     <main id="main-content" class={layoutShellClass}>
       <div class={layoutGridClass}>
@@ -316,13 +343,17 @@ const themeToggleClass =
           ticking = false
         }
 
-        window.addEventListener('scroll', () => {
-          lastY = window.scrollY
-          if (!ticking) {
-            requestAnimationFrame(update)
-            ticking = true
-          }
-        }, { passive: true })
+        window.addEventListener(
+          'scroll',
+          () => {
+            lastY = window.scrollY
+            if (!ticking) {
+              requestAnimationFrame(update)
+              ticking = true
+            }
+          },
+          { passive: true },
+        )
       })()
     </script>
   </body>
