@@ -19,31 +19,37 @@ const timeago = datetime.isBefore(dayjs().subtract(1, 'w')) ? datetime.format('H
 const hasContent = post.content.length > 0
 const hasReactions = Boolean(REACTIONS && post.reactions?.length > 0)
 const hasTags = post.tags.length > 0
-const articleClass = 'transition duration-200'
+const supportsComments = Boolean(COMMENTS && post.type !== 'service')
+const articleClass =
+  'fade-in-item glass-edge overflow-hidden rounded-[16px] border border-line/70 bg-[var(--surface-1)] shadow-soft transition duration-200 hover:-translate-y-[2px] hover:shadow-[var(--shadow-elevated)]'
 const timeBoxClass = 'flex items-center leading-none'
 const timeDotClass = 'h-[8px] w-[8px] rounded-full bg-accent'
 const timeTextClass = 'm-0 flex-1 pl-[10px] text-[14px] font-medium text-accent'
 const itemLinkClass = 'text-accent no-underline hover:underline'
-const contentClass = 'ml-[3px] border-l-2 border-line py-[30px] pl-[15px] text-base leading-[1.6] sm:pl-[30px]'
-const reactionBoxClass = 'ml-[3px] border-l-2 border-line pb-6 pl-[15px] pt-[6px] sm:pl-[30px]'
+const contentClass = 'px-4 pb-5 pt-4 text-[15px] leading-[1.72] sm:px-5'
+const reactionBoxClass = 'px-4 pb-4 pt-0 sm:px-5'
 const reactionListClass = 'm-0 flex flex-wrap gap-[6px]'
 const reactionPillClass =
   'inline-flex items-center gap-1 rounded-full border border-line bg-code py-[3px] pl-[6px] pr-[8px] text-[12px] text-muted'
 const reactionPaidClass = 'border-[rgba(255,196,0,0.35)] bg-[rgba(255,196,0,0.12)] text-[#9a6a00]'
 const reactionEmojiClass = 'inline-flex items-center text-[14px] leading-none'
 const reactionCountClass = 'font-medium opacity-80 [font-variant-numeric:tabular-nums]'
-const tagBoxClass =
-  'ml-[3px] flex flex-wrap items-center gap-2 border-l-2 border-line pl-[15px] text-[14px] leading-[1.6] sm:pl-[30px]'
-const tagPaddingClass = COMMENTS && isItem ? 'pb-[30px]' : 'pb-5'
-const tagStandaloneClass = 'pt-[30px]'
+const tagBoxClass = 'flex flex-wrap items-center gap-2 px-4 text-[14px] leading-[1.6] sm:px-5'
+const tagPaddingClass = supportsComments ? 'pb-4' : 'pb-5'
+const tagStandaloneClass = 'pt-4'
 const tagLinkClass =
   'inline-block rounded-[4px] border border-line px-[10px] py-[2px] text-muted no-underline hover:border-accent hover:text-accent hover:no-underline'
-const commentsClass = 'ml-[3px] border-l-2 border-line pb-6 pl-[15px] pt-[6px] sm:pl-[30px]'
+const commentsClass =
+  'border-t border-line/80 bg-[linear-gradient(180deg,var(--surface-2),var(--surface-3))] px-4 py-3 sm:px-5'
+const commentsToggleClass =
+  'soft-press inline-flex min-h-9 items-center rounded-[10px] border border-line/70 bg-[var(--surface-3)] px-3 py-1 text-[13px] font-medium text-muted transition-[background-color,color,transform] duration-200 hover:-translate-y-px hover:bg-[var(--interactive-hover)] hover:text-accent'
+const commentsPanelClass = 'rounded-[8px] border border-line/80 bg-[var(--surface-2)] p-2 shadow-soft'
+const commentsMetaClass = 'mb-2 text-[12px] text-muted'
 const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${tag}`)}`
 ---
 
 <article class={articleClass} style={{ 'view-transition-name': `post-${post.id}` }}>
-  <header class={timeBoxClass}>
+  <header class:list={[timeBoxClass, 'border-b border-line px-4 py-3 sm:px-5']}>
     <span class={timeDotClass} aria-hidden="true"></span>
     <p class={timeTextClass}>
       <a href={`${SITE_URL}posts/${post.id}`} title={post.datetime} class={itemLinkClass}>
@@ -95,19 +101,87 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
   }
 
   {
-    COMMENTS && isItem && (
+    supportsComments && (
       <section class={commentsClass} aria-label="Comments">
-        {/* Telegram comments are the only intentional client-side JS exception. */}
-        <script
-          is:inline
-          async
-          src="https://telegram.org/js/telegram-widget.js"
-          data-telegram-discussion={`${channel}/${post.id}`}
-          data-comments-limit="50"
-          data-colorful="1"
-          data-color="454545"
-        />
+        <details data-comments>
+          <summary class={commentsToggleClass}>View comments</summary>
+          <div class="expandable-content mt-2">
+            <div class={commentsPanelClass}>
+              <p class={commentsMetaClass} data-comments-meta>
+                Latest replies preview
+              </p>
+              <div
+                data-telegram-comments
+                data-discussion={`${channel}/${post.id}`}
+                data-preview-limit="3"
+                data-full-limit="50"
+                data-comments-limit="3"
+              />
+            </div>
+          </div>
+        </details>
       </section>
     )
   }
 </article>
+
+<script is:inline>
+  ;(() => {
+    const widgetSrc = 'https://telegram.org/js/telegram-widget.js?23'
+
+    function currentTheme() {
+      return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
+    }
+
+    function renderWidget(target, limit) {
+      const discussion = target.dataset.discussion
+      if (!discussion) {
+        return
+      }
+
+      const script = document.createElement('script')
+      script.async = true
+      script.src = widgetSrc
+      script.setAttribute('data-telegram-discussion', discussion)
+      script.setAttribute('data-comments-limit', limit)
+      if (currentTheme() === 'dark') {
+        script.setAttribute('data-dark', '1')
+      }
+
+      target.replaceChildren(script)
+    }
+
+    document.querySelectorAll('details[data-comments]').forEach((details) => {
+      const target = details.querySelector('[data-telegram-comments]')
+      if (!(target instanceof HTMLElement)) {
+        return
+      }
+
+      const meta = details.querySelector('[data-comments-meta]')
+      const previewLimit = target.dataset.previewLimit || '3'
+      const fullLimit = target.dataset.fullLimit || '50'
+
+      renderWidget(target, previewLimit)
+
+      details.addEventListener('toggle', () => {
+        const nextLimit = details.open ? fullLimit : previewLimit
+        renderWidget(target, nextLimit)
+
+        if (meta instanceof HTMLElement) {
+          meta.textContent = details.open ? 'Discussion expanded' : 'Latest replies preview'
+        }
+      })
+    })
+
+    window.addEventListener('themechange', () => {
+      document.querySelectorAll('details[data-comments] [data-telegram-comments]').forEach((target) => {
+        if (target instanceof HTMLElement) {
+          const details = target.closest('details[data-comments]')
+          const previewLimit = target.dataset.previewLimit || '3'
+          const fullLimit = target.dataset.fullLimit || '50'
+          renderWidget(target, details?.open ? fullLimit : previewLimit)
+        }
+      })
+    })
+  })()
+</script>

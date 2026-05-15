@@ -18,16 +18,17 @@ const BLUESKY = getEnv(import.meta.env, Astro, 'BLUESKY')
 const staticProxy = getEnv(import.meta.env, Astro, 'STATIC_PROXY') ?? '/static/'
 const hideDescription = getEnv(import.meta.env, Astro, 'HIDE_DESCRIPTION')
 
-const headerMainClass = 'mb-[10px] flex items-center p-[10px] font-semibold max-sm:p-0'
+const headerMainClass =
+  'mb-3 flex items-center rounded-[16px] border border-line/70 p-3 font-semibold glass-panel glass-edge'
 const avatarClass = 'block h-10 w-10 rounded-full border-[3px] border-white object-cover shadow-soft'
-const titleWrapClass = 'ml-[10px] min-w-0 flex-1 pr-[10px] text-[20px]'
+const titleWrapClass = 'ml-[10px] min-w-0 flex-1 pr-[10px] text-[20px] tracking-tight'
 const titleLinkClass = 'text-heading no-underline hover:text-ink hover:underline'
 const iconNavClass = 'flex items-center gap-[2px]'
 const socialLinkClass = 'group p-1 no-underline'
 const socialIconClass =
   'h-[1em] w-[1em] align-bottom [filter:var(--icon-secondary-filter)] group-hover:[filter:var(--icon-hover-filter)]'
 const introClass =
-  'mb-5 ml-[3px] break-words rounded-panel border-l-2 border-line bg-code px-5 py-[10px] text-base leading-[1.6] text-muted shadow-soft max-sm:my-5 max-sm:ml-0'
+  'mb-5 break-words rounded-[16px] border border-line/70 bg-[var(--surface-2)] px-5 py-3 text-[15px] leading-[1.75] text-muted shadow-soft'
 
 const socialLinks = [
   {
