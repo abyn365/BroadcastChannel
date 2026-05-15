@@ -94,24 +94,24 @@ const navs: NavItem[] = (getEnv(import.meta.env, Astro, 'NAVS') || '')
     }
   })
 
-const layoutShellClass = 'mx-5'
-const layoutGridClass = 'mx-auto flex w-full max-w-[800px] flex-col-reverse sm:flex-row sm:items-start'
-const mainPanelClass = 'w-full min-w-0 pb-5 pt-[10px] sm:mr-5 sm:flex-1 sm:border-r sm:border-line sm:pr-[30px] sm:pt-5'
+const layoutShellClass = 'mx-4 sm:mx-5'
+const layoutGridClass = 'mx-auto flex w-full max-w-[960px] flex-col-reverse gap-4 sm:flex-row sm:items-start sm:gap-5'
+const mainPanelClass = 'w-full min-w-0 pb-5 pt-[10px] sm:flex-1 sm:pt-5'
 const asidePanelClass =
-  'sticky top-0 w-full min-w-0 border-b border-line bg-paper pb-[10px] shadow-[0_4px_16px_-16px_rgba(0,0,0,0.1)] sm:w-[200px] sm:min-w-[200px] sm:self-start sm:border-b-0 sm:bg-transparent sm:pb-5 sm:shadow-none'
+  'sticky top-2 z-20 w-full min-w-0 rounded-[12px] border border-line/70 pb-[10px] shadow-soft glass-panel sm:top-5 sm:w-[230px] sm:min-w-[230px] sm:self-start sm:pb-5'
 const asideInnerClass = 'relative overflow-y-visible sm:max-h-[100svh] sm:overflow-y-auto'
 const navListClass = 'm-0 flex list-none flex-wrap gap-[2px] pl-0 pt-5 sm:block'
 const navItemClass = 'flex items-center text-[14px] leading-none sm:mb-[10px] sm:text-base sm:leading-normal'
 const navLinkClass =
-  'flex-1 inline-block rounded-panel px-[10px] py-[5px] text-heading no-underline transition-[background-color,box-shadow] duration-150 ease-in-out hover:bg-white/65 hover:shadow-soft hover:no-underline'
-const navLinkCurrentClass = 'bg-white/75 shadow-soft'
+  'flex-1 inline-block rounded-[8px] px-[10px] py-[7px] text-heading no-underline transition-[background-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-px hover:bg-white/65 hover:shadow-soft hover:no-underline'
+const navLinkCurrentClass = 'bg-white/80 shadow-soft'
 const skipLinkClass =
   'pointer-events-none absolute left-5 top-0 z-[1100] -translate-y-full rounded-panel bg-heading px-3 py-2 text-sm text-white no-underline transition-transform duration-150 focus-visible:pointer-events-auto focus-visible:translate-y-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-heading'
 const searchToggleId = 'search-toggle'
 const searchToggleClass = 'peer sr-only sm:hidden'
 const searchToggleLabelClass =
   'absolute right-0 top-5 inline-flex h-6 w-6 items-center justify-center rounded-panel bg-paper text-base leading-6 text-heading no-underline peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-heading sm:hidden'
-const searchFormClass = 'mt-3 hidden rounded-panel bg-code p-2 text-muted peer-checked:block sm:mt-0 sm:block'
+const searchFormClass = 'mt-3 hidden rounded-[8px] bg-code/70 p-2 text-muted peer-checked:block sm:mt-0 sm:block'
 const searchInputClass =
   'box-border w-full rounded-panel border border-paper bg-code px-2 text-[16px] leading-[2.4] text-muted outline-none placeholder:text-muted focus-visible:border-heading focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-heading sm:text-[12px]'
 const footerClass = 'hidden p-2 text-[14px] leading-[1.5] text-footer sm:block'
@@ -121,7 +121,7 @@ const backToTopIconClass = 'h-auto w-auto [filter:var(--icon-secondary-filter)]'
 const skipLinkText = 'Skip to main content'
 const searchLabelText = 'Search'
 const themeToggleClass =
-  'mt-2 inline-flex w-full items-center justify-center rounded-panel border border-line bg-code px-2 py-1 text-[14px] text-heading hover:bg-white/65'
+  'mt-2 inline-flex min-h-9 w-full items-center justify-center rounded-[8px] border border-line bg-code/70 px-2 py-1 text-[14px] text-heading transition hover:-translate-y-px hover:bg-white/65'
 ---
 
 <!doctype html>

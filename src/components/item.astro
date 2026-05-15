@@ -20,7 +20,8 @@ const hasContent = post.content.length > 0
 const hasReactions = Boolean(REACTIONS && post.reactions?.length > 0)
 const hasTags = post.tags.length > 0
 const supportsComments = Boolean(COMMENTS && post.type !== 'service')
-const articleClass = 'overflow-hidden rounded-[10px] border border-line bg-surface shadow-soft transition duration-200'
+const articleClass =
+  'fade-in-item overflow-hidden rounded-[14px] border border-line/70 bg-surface/95 shadow-soft transition duration-200 hover:-translate-y-[2px] hover:shadow-[var(--shadow-elevated)]'
 const timeBoxClass = 'flex items-center leading-none'
 const timeDotClass = 'h-[8px] w-[8px] rounded-full bg-accent'
 const timeTextClass = 'm-0 flex-1 pl-[10px] text-[14px] font-medium text-accent'
@@ -42,7 +43,7 @@ const commentsClass =
   'border-t border-line bg-[linear-gradient(180deg,rgba(255,255,255,0.18),rgba(255,255,255,0.02))] px-4 py-3 sm:px-5'
 const commentsToggleClass =
   'inline-flex min-h-9 items-center rounded-panel border border-line bg-code px-3 py-1 text-[13px] font-medium text-muted transition hover:text-accent'
-const commentsPanelClass = 'mt-2 rounded-[8px] border border-line/90 bg-surface/90 p-2 shadow-soft'
+const commentsPanelClass = 'rounded-[8px] border border-line/90 bg-surface/90 p-2 shadow-soft'
 const commentsMetaClass = 'mb-2 text-[12px] text-muted'
 const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${tag}`)}`
 ---
@@ -104,17 +105,19 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       <section class={commentsClass} aria-label="Comments">
         <details data-comments>
           <summary class={commentsToggleClass}>View comments</summary>
-          <div class={commentsPanelClass}>
-            <p class={commentsMetaClass} data-comments-meta>
-              Latest replies preview
-            </p>
-            <div
-              data-telegram-comments
-              data-discussion={`${channel}/${post.id}`}
-              data-preview-limit="3"
-              data-full-limit="50"
-              data-comments-limit="3"
-            />
+          <div class="expandable-content mt-2">
+            <div class={commentsPanelClass}>
+              <p class={commentsMetaClass} data-comments-meta>
+                Latest replies preview
+              </p>
+              <div
+                data-telegram-comments
+                data-discussion={`${channel}/${post.id}`}
+                data-preview-limit="3"
+                data-full-limit="50"
+                data-comments-limit="3"
+              />
+            </div>
           </div>
         </details>
       </section>
