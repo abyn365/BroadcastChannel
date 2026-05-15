@@ -28,5 +28,17 @@ export async function createStaticProxyResponse(request: Request, rawTarget: str
   }
 
   const response = await fetch(target.toString(), request)
-  return new Response(response.body, response)
+  const headers = new Headers(response.headers)
+
+  // Telegram CDN sometimes sends document-oriented security headers that can
+  // prevent proxied media from being rendered as <img> resources.
+  headers.delete('content-security-policy')
+  headers.delete('content-security-policy-report-only')
+  headers.delete('x-frame-options')
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
 }
