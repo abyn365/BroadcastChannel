@@ -184,5 +184,158 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
         }
       })
     })
+
+    function setupMediaVideo(video) {
+      if (!(video instanceof HTMLVideoElement) || video.dataset.enhanced === 'true') {
+        return
+      }
+
+      video.dataset.enhanced = 'true'
+      video.controls = false
+      video.preload = 'metadata'
+      video.playsInline = true
+
+      const wrap = video.closest('.media-video-wrap')
+      if (!(wrap instanceof HTMLElement)) {
+        return
+      }
+
+      const showControls = () => {
+        wrap.dataset.interacted = 'true'
+        video.controls = true
+      }
+
+      const hideControls = () => {
+        if (!video.paused || document.fullscreenElement === wrap) {
+          return
+        }
+        wrap.removeAttribute('data-interacted')
+        video.controls = false
+      }
+
+      wrap.addEventListener('mouseenter', showControls)
+      wrap.addEventListener('mouseleave', hideControls)
+      wrap.addEventListener('focusin', showControls)
+      wrap.addEventListener('focusout', () => setTimeout(hideControls, 120))
+      wrap.addEventListener('pointerdown', (event) => {
+        const rect = wrap.getBoundingClientRect()
+        const safeSeekZoneTop = rect.bottom - Math.min(72, rect.height * 0.26)
+        if (event.clientY < safeSeekZoneTop) {
+          video.controls = false
+        }
+        showControls()
+      })
+      video.addEventListener('play', showControls)
+      video.addEventListener('pause', () => setTimeout(hideControls, 900))
+      video.addEventListener('ended', showControls)
+
+      document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement === wrap) {
+          showControls()
+          return
+        }
+        hideControls()
+      })
+    }
+
+    function setupSwipeableMediaGroup(group) {
+      if (!(group instanceof HTMLElement) || group.dataset.swipeReady === 'true') {
+        return
+      }
+
+      group.dataset.swipeReady = 'true'
+      const coarsePointer = window.matchMedia('(pointer: coarse)').matches
+      if (!coarsePointer) {
+        return
+      }
+
+      let startX = 0
+      let startY = 0
+      let lastX = 0
+      let startTime = 0
+      let pointerId = -1
+      let startScrollLeft = 0
+      let dragging = false
+      let horizontalSwipe = false
+
+      const clearSwipeState = () => {
+        group.removeAttribute('data-swiping')
+        dragging = false
+        horizontalSwipe = false
+        pointerId = -1
+      }
+
+      group.addEventListener('pointerdown', (event) => {
+        if (event.pointerType !== 'touch') {
+          return
+        }
+        startX = event.clientX
+        startY = event.clientY
+        lastX = startX
+        startTime = Date.now()
+        startScrollLeft = group.scrollLeft
+        pointerId = event.pointerId
+        dragging = true
+        horizontalSwipe = false
+        group.setPointerCapture(pointerId)
+      })
+
+      group.addEventListener('pointermove', (event) => {
+        if (!dragging || pointerId !== event.pointerId) {
+          return
+        }
+
+        const dx = event.clientX - startX
+        const dy = event.clientY - startY
+
+        if (!horizontalSwipe) {
+          if (Math.abs(dx) >= 14 && Math.abs(dx) > Math.abs(dy) * 1.1) {
+            horizontalSwipe = true
+            group.dataset.swiping = 'true'
+            group.querySelectorAll('.media-video-wrap video').forEach((video) => {
+              if (video instanceof HTMLVideoElement) {
+                video.controls = false
+              }
+            })
+          }
+
+          if (!horizontalSwipe && Math.abs(dy) >= 12 && Math.abs(dy) > Math.abs(dx)) {
+            clearSwipeState()
+            return
+          }
+        }
+
+        if (horizontalSwipe) {
+          event.preventDefault()
+          group.scrollLeft = startScrollLeft - dx
+          lastX = event.clientX
+        }
+      })
+
+      group.addEventListener('pointerup', (event) => {
+        if (pointerId !== event.pointerId) {
+          return
+        }
+
+        if (horizontalSwipe) {
+          const elapsed = Math.max(1, Date.now() - startTime)
+          const travel = lastX - startX
+          const velocity = travel / elapsed
+          const item = group.querySelector('.media-group__item')
+          const width = item instanceof HTMLElement ? item.offsetWidth + 10 : group.clientWidth * 0.9
+          const momentum = velocity * 140
+          const projected = startScrollLeft - (travel + momentum)
+          const target = Math.round(projected / width) * width
+          group.scrollTo({ left: target, behavior: 'smooth' })
+        }
+
+        clearSwipeState()
+      })
+
+      group.addEventListener('pointercancel', clearSwipeState)
+    }
+
+    document.querySelectorAll('.content .media-video-wrap video').forEach(setupMediaVideo)
+    document.querySelectorAll('.content .media-group').forEach(setupSwipeableMediaGroup)
   })()
 </script>
