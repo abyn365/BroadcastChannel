@@ -293,6 +293,7 @@
       border-radius: var(--radius-media);
       overflow: hidden;
       margin: 0.5em 0;
+      contain: layout paint;
     }
 
     /* Odd count: first item spans full width */
@@ -326,6 +327,23 @@
       flex: 1;
     }
 
+    .media-video-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background: linear-gradient(to top, rgb(0 0 0 / 55%) 0%, rgb(0 0 0 / 0%) 45%);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .media-video-wrap:focus-within::before,
+    .media-video-wrap[data-interacted]::before,
+    .media-video-wrap:hover::before {
+      opacity: 1;
+    }
+
     .media-video-wrap video {
       position: absolute;
       inset: 0;
@@ -334,6 +352,21 @@
       object-fit: contain;
       display: block;
       border-radius: 0 !important;
+      background: #000;
+      touch-action: pan-y;
+    }
+
+    .media-video-wrap video::-webkit-media-controls-panel {
+      background: linear-gradient(to top, rgb(0 0 0 / 42%) 0%, rgb(0 0 0 / 0%) 100%);
+      transition: opacity 0.2s ease;
+    }
+
+    .media-video-wrap video:not(:focus-visible) {
+      outline: none;
+    }
+
+    .media-video-wrap video[controls] {
+      opacity: 1;
     }
 
     /* Single standalone video (not in a grid) */
@@ -360,7 +393,9 @@
 
     /* Text-only preview (no image) */
     .tgme_widget_message_link_preview--text,
-    .tgme_widget_message_link_preview:has(.link_preview_site_name):not(.tgme_widget_message_link_preview--image):not(.tgme_widget_message_link_preview--has-image) {
+    .tgme_widget_message_link_preview:has(.link_preview_site_name):not(.tgme_widget_message_link_preview--image):not(
+        .tgme_widget_message_link_preview--has-image
+      ) {
       display: block;
       background: linear-gradient(135deg, var(--surface-1), var(--surface-2));
       border-left: 3px solid var(--color-accent);
@@ -382,12 +417,18 @@
 
     /* Ensure link_preview_site_name/title show in text-only variant */
     .tgme_widget_message_link_preview--text .link_preview_site_name,
-    .tgme_widget_message_link_preview:has(.link_preview_site_name):not(.tgme_widget_message_link_preview--image):not(.tgme_widget_message_link_preview--has-image) .link_preview_site_name {
+    .tgme_widget_message_link_preview:has(.link_preview_site_name):not(.tgme_widget_message_link_preview--image):not(
+        .tgme_widget_message_link_preview--has-image
+      )
+      .link_preview_site_name {
       display: block;
     }
 
     .tgme_widget_message_link_preview--text .link_preview_title,
-    .tgme_widget_message_link_preview:has(.link_preview_site_name):not(.tgme_widget_message_link_preview--image):not(.tgme_widget_message_link_preview--has-image) .link_preview_title {
+    .tgme_widget_message_link_preview:has(.link_preview_site_name):not(.tgme_widget_message_link_preview--image):not(
+        .tgme_widget_message_link_preview--has-image
+      )
+      .link_preview_title {
       display: block;
       font-size: 0.96em;
       font-weight: 600;
@@ -396,7 +437,10 @@
     }
 
     .tgme_widget_message_link_preview--text .link_preview_description,
-    .tgme_widget_message_link_preview:has(.link_preview_site_name):not(.tgme_widget_message_link_preview--image):not(.tgme_widget_message_link_preview--has-image) .link_preview_description {
+    .tgme_widget_message_link_preview:has(.link_preview_site_name):not(.tgme_widget_message_link_preview--image):not(
+        .tgme_widget_message_link_preview--has-image
+      )
+      .link_preview_description {
       display: block;
       font-size: 0.82em;
       line-height: 1.5;
@@ -839,6 +883,24 @@
 
       .media-group {
         gap: 2px;
+      }
+
+      .media-group {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .media-group__item {
+        min-width: min(88vw, 460px);
+        scroll-snap-align: center;
+      }
+
+      .media-group.media-group-odd .media-group__item:first-child {
+        grid-column: auto;
       }
 
       /* On narrow screens cap video height so tall portrait videos don't dominate */

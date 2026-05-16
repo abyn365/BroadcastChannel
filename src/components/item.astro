@@ -184,5 +184,53 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
         }
       })
     })
+
+    function setupMediaVideo(video) {
+      if (!(video instanceof HTMLVideoElement) || video.dataset.enhanced === 'true') {
+        return
+      }
+
+      video.dataset.enhanced = 'true'
+      video.controls = false
+      video.preload = 'metadata'
+      video.playsInline = true
+
+      const wrap = video.closest('.media-video-wrap')
+      if (!(wrap instanceof HTMLElement)) {
+        return
+      }
+
+      const showControls = () => {
+        wrap.dataset.interacted = 'true'
+        video.controls = true
+      }
+
+      const hideControls = () => {
+        if (!video.paused || document.fullscreenElement === wrap) {
+          return
+        }
+        wrap.removeAttribute('data-interacted')
+        video.controls = false
+      }
+
+      wrap.addEventListener('mouseenter', showControls)
+      wrap.addEventListener('mouseleave', hideControls)
+      wrap.addEventListener('focusin', showControls)
+      wrap.addEventListener('focusout', () => setTimeout(hideControls, 120))
+      wrap.addEventListener('pointerdown', showControls, { passive: true })
+      video.addEventListener('play', showControls)
+      video.addEventListener('pause', () => setTimeout(hideControls, 900))
+      video.addEventListener('ended', showControls)
+
+      document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement === wrap) {
+          showControls()
+          return
+        }
+        hideControls()
+      })
+    }
+
+    document.querySelectorAll('.content .media-video-wrap video').forEach(setupMediaVideo)
   })()
 </script>
