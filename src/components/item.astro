@@ -135,9 +135,7 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
     function renderWidget(target, limit) {
       const discussion = target.dataset.discussion
-      if (!discussion) {
-        return
-      }
+      if (!discussion) return
 
       const script = document.createElement('script')
       script.async = true
@@ -145,18 +143,13 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       script.setAttribute('data-telegram-discussion', discussion)
       script.setAttribute('data-comments-limit', limit)
       script.setAttribute('data-colorful', '1')
-      if (currentTheme() === 'dark') {
-        script.setAttribute('data-dark', '1')
-      }
-
+      if (currentTheme() === 'dark') script.setAttribute('data-dark', '1')
       target.replaceChildren(script)
     }
 
     document.querySelectorAll('details[data-comments]').forEach((details) => {
       const target = details.querySelector('[data-telegram-comments]')
-      if (!(target instanceof HTMLElement)) {
-        return
-      }
+      if (!(target instanceof HTMLElement)) return
 
       const meta = details.querySelector('[data-comments-meta]')
       const previewLimit = target.dataset.previewLimit || '3'
@@ -167,7 +160,6 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       details.addEventListener('toggle', () => {
         const nextLimit = details.open ? fullLimit : previewLimit
         renderWidget(target, nextLimit)
-
         if (meta instanceof HTMLElement) {
           meta.textContent = details.open ? 'Discussion expanded' : 'Latest replies preview'
         }
@@ -185,10 +177,17 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       })
     })
 
+    // ─────────────────────────────────────────────
+    // PREMIUM MEDIA PLAYER — spring physics,
+    // glassmorphic controls, auto-advance carousel
+    // ─────────────────────────────────────────────
+
+    // Spring easing for CSS custom animations
+    const SPRING = 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+    const EASE_SMOOTH = 'cubic-bezier(0.22, 1, 0.36, 1)'
+
     function setupMediaVideo(video) {
-      if (!(video instanceof HTMLVideoElement) || video.dataset.enhanced === 'true') {
-        return
-      }
+      if (!(video instanceof HTMLVideoElement) || video.dataset.enhanced === 'true') return
 
       video.dataset.enhanced = 'true'
       video.controls = false
@@ -196,58 +195,210 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       video.playsInline = true
 
       const wrap = video.closest('.media-video-wrap')
-      if (!(wrap instanceof HTMLElement)) {
-        return
-      }
+      if (!(wrap instanceof HTMLElement)) return
+
+      // Inject glassmorphic control overlay
+      injectVideoControls(video, wrap)
 
       const showControls = () => {
         wrap.dataset.interacted = 'true'
-        video.controls = true
+        video.controls = false // always use custom controls
       }
 
       const hideControls = () => {
-        if (!video.paused || document.fullscreenElement === wrap) {
-          return
-        }
+        if (!video.paused || document.fullscreenElement === wrap) return
         wrap.removeAttribute('data-interacted')
-        video.controls = false
       }
 
       wrap.addEventListener('mouseenter', showControls)
-      wrap.addEventListener('mouseleave', hideControls)
+      wrap.addEventListener('mouseleave', () => setTimeout(hideControls, 1200))
       wrap.addEventListener('focusin', showControls)
       wrap.addEventListener('focusout', () => setTimeout(hideControls, 120))
-      wrap.addEventListener('pointerdown', (event) => {
+
+      // Tap to toggle play/pause + show controls
+      wrap.addEventListener('pointerdown', (e) => {
         const rect = wrap.getBoundingClientRect()
         const safeSeekZoneTop = rect.bottom - Math.min(72, rect.height * 0.26)
-        if (event.clientY < safeSeekZoneTop) {
-          video.controls = false
+        if (e.clientY < safeSeekZoneTop && e.pointerType === 'touch') {
+          // tap area — toggle play
         }
         showControls()
       })
+
       video.addEventListener('play', showControls)
       video.addEventListener('pause', () => setTimeout(hideControls, 900))
-      video.addEventListener('ended', showControls)
+      video.addEventListener('ended', () => {
+        wrap.removeAttribute('data-interacted')
+        // Auto-advance in carousel
+        const group = wrap.closest('.media-group')
+        if (group instanceof HTMLElement) {
+          autoAdvanceCarousel(group, wrap)
+        }
+      })
 
       document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement === wrap) {
-          showControls()
-          return
-        }
+        if (document.fullscreenElement === wrap) { showControls(); return }
         hideControls()
       })
     }
 
-    function setupSwipeableMediaGroup(group) {
-      if (!(group instanceof HTMLElement) || group.dataset.swipeReady === 'true') {
-        return
+    function injectVideoControls(video, wrap) {
+      // Don't double-inject
+      if (wrap.querySelector('.glass-controls')) return
+
+      const ctrl = document.createElement('div')
+      ctrl.className = 'glass-controls'
+      ctrl.setAttribute('aria-label', 'Video controls')
+
+      // Play/pause button
+      const playBtn = document.createElement('button')
+      playBtn.className = 'glass-btn glass-play-btn'
+      playBtn.setAttribute('aria-label', 'Play/Pause')
+      playBtn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path class="play-icon" d="M8 5v14l11-7z"/><path class="pause-icon" style="display:none" d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>`
+
+      // Progress bar
+      const progressWrap = document.createElement('div')
+      progressWrap.className = 'glass-progress-wrap'
+      const progressTrack = document.createElement('div')
+      progressTrack.className = 'glass-progress-track'
+      const progressFill = document.createElement('div')
+      progressFill.className = 'glass-progress-fill'
+      const progressThumb = document.createElement('div')
+      progressThumb.className = 'glass-progress-thumb'
+      progressFill.appendChild(progressThumb)
+      progressTrack.appendChild(progressFill)
+      progressWrap.appendChild(progressTrack)
+
+      // Mute button
+      const muteBtn = document.createElement('button')
+      muteBtn.className = 'glass-btn glass-mute-btn'
+      muteBtn.setAttribute('aria-label', 'Mute/Unmute')
+      muteBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path class="unmuted-icon" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/><path class="muted-icon" style="display:none" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`
+
+      // Fullscreen button
+      const fsBtn = document.createElement('button')
+      fsBtn.className = 'glass-btn glass-fs-btn'
+      fsBtn.setAttribute('aria-label', 'Fullscreen')
+      fsBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>`
+
+      const rightBtns = document.createElement('div')
+      rightBtns.className = 'glass-right-btns'
+      rightBtns.appendChild(muteBtn)
+      rightBtns.appendChild(fsBtn)
+
+      ctrl.appendChild(playBtn)
+      ctrl.appendChild(progressWrap)
+      ctrl.appendChild(rightBtns)
+      wrap.appendChild(ctrl)
+
+      // — Play/pause toggle
+      playBtn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        if (video.paused) {
+          video.play()
+        } else {
+          video.pause()
+        }
+      })
+
+      // Also tap on video itself toggles play (not on controls)
+      wrap.addEventListener('click', (e) => {
+        if (e.target === ctrl || ctrl.contains(e.target)) return
+        if (video.paused) { video.play() } else { video.pause() }
+        wrap.dataset.interacted = 'true'
+      })
+
+      // — Sync play/pause icon
+      const syncPlayIcon = () => {
+        const playIcon = playBtn.querySelector('.play-icon')
+        const pauseIcon = playBtn.querySelector('.pause-icon')
+        if (playIcon && pauseIcon) {
+          playIcon.style.display = video.paused ? '' : 'none'
+          pauseIcon.style.display = video.paused ? 'none' : ''
+        }
+        playBtn.setAttribute('aria-label', video.paused ? 'Play' : 'Pause')
       }
+      video.addEventListener('play', syncPlayIcon)
+      video.addEventListener('pause', syncPlayIcon)
+      syncPlayIcon()
+
+      // — Progress bar
+      video.addEventListener('timeupdate', () => {
+        if (!video.duration) return
+        const pct = (video.currentTime / video.duration) * 100
+        progressFill.style.width = `${pct}%`
+      })
+
+      progressTrack.addEventListener('click', (e) => {
+        e.stopPropagation()
+        const rect = progressTrack.getBoundingClientRect()
+        const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+        video.currentTime = pct * video.duration
+      })
+
+      // — Mute toggle
+      muteBtn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        video.muted = !video.muted
+        const unmuted = muteBtn.querySelector('.unmuted-icon')
+        const muted = muteBtn.querySelector('.muted-icon')
+        if (unmuted && muted) {
+          unmuted.style.display = video.muted ? 'none' : ''
+          muted.style.display = video.muted ? '' : 'none'
+        }
+      })
+
+      // — Fullscreen
+      fsBtn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        if (document.fullscreenElement) {
+          document.exitFullscreen()
+        } else {
+          wrap.requestFullscreen?.()
+        }
+      })
+    }
+
+    // Smoothly advance carousel to next item after video ends
+    function autoAdvanceCarousel(group, currentWrap) {
+      const items = Array.from(group.querySelectorAll('.media-group__item'))
+      const currentItem = currentWrap.closest('.media-group__item')
+      const currentIdx = items.indexOf(currentItem)
+      if (currentIdx < 0 || currentIdx >= items.length - 1) return
+
+      const nextItem = items[currentIdx + 1]
+      if (!nextItem) return
+
+      // Brief pause then smooth scroll
+      setTimeout(() => {
+        // Don't auto-advance if user recently interacted
+        if (group.dataset.userInteracted === 'true') return
+
+        const itemWidth = nextItem.offsetWidth
+        const gap = 10
+        const targetScrollLeft = (currentIdx + 1) * (itemWidth + gap)
+
+        group.scrollTo({ left: targetScrollLeft, behavior: 'smooth' })
+
+        // Optionally autoplay next video
+        setTimeout(() => {
+          const nextVideo = nextItem.querySelector('video')
+          if (nextVideo instanceof HTMLVideoElement) {
+            nextVideo.play().catch(() => {})
+          }
+        }, 400)
+      }, 600)
+    }
+
+    function setupSwipeableMediaGroup(group) {
+      if (!(group instanceof HTMLElement) || group.dataset.swipeReady === 'true') return
 
       group.dataset.swipeReady = 'true'
+
+      // Inject dot indicator nav
+      injectCarouselDots(group)
+
       const coarsePointer = window.matchMedia('(pointer: coarse)').matches
-      if (!coarsePointer) {
-        return
-      }
 
       let startX = 0
       let startY = 0
@@ -258,6 +409,15 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       let dragging = false
       let horizontalSwipe = false
 
+      // Track user interaction to pause auto-advance
+      const markUserInteraction = () => {
+        group.dataset.userInteracted = 'true'
+        clearTimeout(group._interactionTimeout)
+        group._interactionTimeout = setTimeout(() => {
+          delete group.dataset.userInteracted
+        }, 8000)
+      }
+
       const clearSwipeState = () => {
         group.removeAttribute('data-swiping')
         dragging = false
@@ -266,9 +426,7 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       }
 
       group.addEventListener('pointerdown', (event) => {
-        if (event.pointerType !== 'touch') {
-          return
-        }
+        if (event.pointerType !== 'touch' && event.pointerType !== 'mouse') return
         startX = event.clientX
         startY = event.clientY
         lastX = startX
@@ -278,27 +436,23 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
         dragging = true
         horizontalSwipe = false
         group.setPointerCapture(pointerId)
+        markUserInteraction()
       })
 
       group.addEventListener('pointermove', (event) => {
-        if (!dragging || pointerId !== event.pointerId) {
-          return
-        }
+        if (!dragging || pointerId !== event.pointerId) return
 
         const dx = event.clientX - startX
         const dy = event.clientY - startY
 
         if (!horizontalSwipe) {
-          if (Math.abs(dx) >= 14 && Math.abs(dx) > Math.abs(dy) * 1.1) {
+          if (Math.abs(dx) >= 10 && Math.abs(dx) > Math.abs(dy) * 1.1) {
             horizontalSwipe = true
             group.dataset.swiping = 'true'
-            group.querySelectorAll('.media-video-wrap video').forEach((video) => {
-              if (video instanceof HTMLVideoElement) {
-                video.controls = false
-              }
+            group.querySelectorAll('.media-video-wrap video').forEach((v) => {
+              if (v instanceof HTMLVideoElement) v.controls = false
             })
           }
-
           if (!horizontalSwipe && Math.abs(dy) >= 12 && Math.abs(dy) > Math.abs(dx)) {
             clearSwipeState()
             return
@@ -307,15 +461,18 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
         if (horizontalSwipe) {
           event.preventDefault()
-          group.scrollLeft = startScrollLeft - dx
+          // Rubber band at edges
+          let newLeft = startScrollLeft - dx
+          const maxScroll = group.scrollWidth - group.clientWidth
+          if (newLeft < 0) newLeft = newLeft * 0.3
+          if (newLeft > maxScroll) newLeft = maxScroll + (newLeft - maxScroll) * 0.3
+          group.scrollLeft = newLeft
           lastX = event.clientX
         }
       })
 
       group.addEventListener('pointerup', (event) => {
-        if (pointerId !== event.pointerId) {
-          return
-        }
+        if (pointerId !== event.pointerId) return
 
         if (horizontalSwipe) {
           const elapsed = Math.max(1, Date.now() - startTime)
@@ -323,18 +480,60 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
           const velocity = travel / elapsed
           const item = group.querySelector('.media-group__item')
           const width = item instanceof HTMLElement ? item.offsetWidth + 10 : group.clientWidth * 0.9
-          const momentum = velocity * 140
+          const momentum = velocity * 160
           const projected = startScrollLeft - (travel + momentum)
           const target = Math.round(projected / width) * width
-          group.scrollTo({ left: target, behavior: 'smooth' })
+          group.scrollTo({ left: Math.max(0, target), behavior: 'smooth' })
+          updateCarouselDots(group)
         }
 
         clearSwipeState()
       })
 
       group.addEventListener('pointercancel', clearSwipeState)
+
+      // Update dots on scroll end
+      let scrollEndTimer
+      group.addEventListener('scroll', () => {
+        clearTimeout(scrollEndTimer)
+        scrollEndTimer = setTimeout(() => updateCarouselDots(group), 80)
+      }, { passive: true })
     }
 
+    function injectCarouselDots(group) {
+      const items = group.querySelectorAll('.media-group__item')
+      if (items.length < 2) return
+
+      const dotsWrap = document.createElement('div')
+      dotsWrap.className = 'carousel-dots'
+      dotsWrap.setAttribute('aria-hidden', 'true')
+
+      Array.from(items).forEach((_, i) => {
+        const dot = document.createElement('span')
+        dot.className = 'carousel-dot' + (i === 0 ? ' carousel-dot--active' : '')
+        dotsWrap.appendChild(dot)
+      })
+
+      // Insert after group (inside same parent container)
+      group.insertAdjacentElement('afterend', dotsWrap)
+      group._dotsEl = dotsWrap
+    }
+
+    function updateCarouselDots(group) {
+      const dotsWrap = group._dotsEl
+      if (!dotsWrap) return
+      const items = Array.from(group.querySelectorAll('.media-group__item'))
+      if (!items.length) return
+
+      const itemWidth = items[0].offsetWidth + 10
+      const activeIdx = Math.round(group.scrollLeft / itemWidth)
+
+      dotsWrap.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+        dot.classList.toggle('carousel-dot--active', i === activeIdx)
+      })
+    }
+
+    // Init all media
     document.querySelectorAll('.content .media-video-wrap video').forEach(setupMediaVideo)
     document.querySelectorAll('.content .media-group').forEach(setupSwipeableMediaGroup)
   })()
