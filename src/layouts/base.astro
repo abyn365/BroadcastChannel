@@ -3,6 +3,7 @@ import '../styles/app.css'
 import { SEO } from 'astro-seo'
 import { getEnv } from '../lib/env'
 import backToTopIcon from '../assets/back-to-top.svg'
+import mediaPlayerScript from '../scripts/media-player.ts?url'
 import type { NavItem } from '../types'
 
 const { SITE_URL, RSS_URL, RSS_PREFIX } = Astro.locals
@@ -372,5 +373,6 @@ const themeToggleClass =
         )
       })()
     </script>
+    <script type="module" src={mediaPlayerScript}></script>
   </body>
 </html>
