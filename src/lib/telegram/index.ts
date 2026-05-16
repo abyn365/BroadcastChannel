@@ -122,6 +122,10 @@ function getStylePaddingTop(style: string | undefined): number | null {
   return value ? Number(value) : null
 }
 
+function getStyleBackgroundUrl(style: string | undefined): string | null {
+  return style?.match(STYLE_URL_REGEX)?.[2] ?? null
+}
+
 function hasSelfOrDescendant(element: Cheerio<AnyNode>, selector: string): boolean {
   return element.is(selector) || element.find(selector).length > 0
 }
@@ -323,9 +327,14 @@ function getVideos($: CheerioAPI, message: MessageSelection, options: IndexedSta
     const wrap = $(wrapNode)
     const video = wrap.find('video')
     const videoSrc = video.attr('src')
+    const posterSrc = getStyleBackgroundUrl(wrap.find('i').attr('style') ?? wrap.attr('style'))
 
     if (videoSrc) {
       video.attr('src', staticProxy + videoSrc)
+    }
+
+    if (posterSrc) {
+      video.attr('poster', getMediaSrc(posterSrc, staticProxy))
     }
 
     video
@@ -346,11 +355,17 @@ function getVideos($: CheerioAPI, message: MessageSelection, options: IndexedSta
 
   // Collect round videos (always 1:1)
   for (const wrapNode of message.find('.tgme_widget_message_roundvideo_wrap').toArray()) {
-    const video = $(wrapNode).find('video')
+    const wrap = $(wrapNode)
+    const video = wrap.find('video')
     const videoSrc = video.attr('src')
+    const posterSrc = getStyleBackgroundUrl(wrap.find('i').attr('style') ?? wrap.attr('style'))
 
     if (videoSrc) {
       video.attr('src', staticProxy + videoSrc)
+    }
+
+    if (posterSrc) {
+      video.attr('poster', getMediaSrc(posterSrc, staticProxy))
     }
 
     video
@@ -575,9 +590,7 @@ async function extractMediaGroupContent(
   const imageFragments: string[] = []
   const videoFragments: string[] = []
   const audioFragments: string[] = []
-  let captionHtml = ''
-  let captionId = ''
-  let lastCaptionText = ''
+  let _captionHtml = ''
 
   for (const [msgIndex, msgNode] of messages.toArray().entries()) {
     const msg = $(msgNode)
@@ -586,7 +599,8 @@ async function extractMediaGroupContent(
     // Images in this sub-message
     for (const [photoIndex, photoNode] of msg.find('.tgme_widget_message_photo_wrap').toArray().entries()) {
       const imageUrl = $(photoNode).attr('style')?.match(STYLE_URL_REGEX)?.[2]
-      if (!imageUrl) continue
+      if (!imageUrl)
+        continue
 
       const safeTitle = 'Image from post'
       const safeLabel = 'Open image preview'
@@ -643,19 +657,19 @@ async function extractMediaGroupContent(
     const audio = msg.find('.tgme_widget_message_voice')
     if (audio.length) {
       const audioSrc = audio.attr('src')
-      if (audioSrc) audio.attr('src', staticProxy + audioSrc)
+      if (audioSrc)
+        audio.attr('src', staticProxy + audioSrc)
       audio.attr('controls', '')
       const html = $.html(audio)
-      if (html) audioFragments.push(html)
+      if (html)
+        audioFragments.push(html)
     }
 
     // Caption: last sub-message with text wins
     const textSel = msg.find('.tgme_widget_message_text')
     if (textSel.length && textSel.text().trim()) {
-      const modified = await modifyHTMLContent($, textSel, { index: index ?? msgIndex, staticProxy })
-      captionHtml = modified.html() ?? ''
-      captionId = msgId
-      lastCaptionText = textSel.text()
+      const _modified = await modifyHTMLContent($, textSel, { index: index ?? msgIndex, staticProxy })
+      _captionHtml = _modified.html() ?? ''
     }
   }
 
@@ -686,8 +700,8 @@ async function extractMediaGroupContent(
     allMedia.push(a)
   }
 
-  if (captionHtml) {
-    allMedia.push(`<div class="media-group__caption">${captionHtml}</div>`)
+  if (_captionHtml) {
+    allMedia.push(`<div class="media-group__caption">${_captionHtml}</div>`)
   }
 
   return allMedia.join('')
@@ -807,7 +821,7 @@ async function extractMediaGroupPost($: CheerioAPI, item: AnyNode, options: Extr
 
   // Caption = text from the last sub-message that has any
   let captionText = ''
-  let captionHtml = ''
+  let _captionHtml = ''
   const tags: string[] = []
 
   for (const [msgIndex, msgNode] of messages.toArray().entries()) {
@@ -828,7 +842,7 @@ async function extractMediaGroupPost($: CheerioAPI, item: AnyNode, options: Extr
       }
 
       captionText = textEl.text()
-      captionHtml = modified.html() ?? ''
+      _captionHtml = modified.html() ?? ''
     }
   }
 

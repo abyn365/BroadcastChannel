@@ -372,5 +372,92 @@ const themeToggleClass =
         )
       })()
     </script>
+
+    <script is:inline>
+      ;(() => {
+        const pointerFine = window.matchMedia('(pointer: fine)').matches
+        const visibilityMs = pointerFine ? 2200 : 2800
+        const teardownMap = new WeakMap()
+
+        function hideControls(wrapper, video) {
+          wrapper.removeAttribute('data-controls-visible')
+          if (!video.paused && !video.ended) {
+            video.removeAttribute('controls')
+          }
+        }
+
+        function showControls(wrapper, video) {
+          wrapper.setAttribute('data-controls-visible', '')
+          video.setAttribute('controls', '')
+        }
+
+        function bindVideo(video) {
+          if (!(video instanceof HTMLVideoElement) || teardownMap.has(video)) {
+            return
+          }
+
+          const wrapper = video.closest('.media-video-wrap')
+          if (!(wrapper instanceof HTMLElement)) {
+            return
+          }
+
+          wrapper.classList.add('media-video-wrap--enhanced')
+          video.setAttribute('playsinline', '')
+          video.setAttribute('webkit-playsinline', '')
+
+          let timer = 0
+          const scheduleHide = () => {
+            clearTimeout(timer)
+            timer = window.setTimeout(hideControls, visibilityMs, wrapper, video)
+          }
+
+          const onPointerEnter = () => showControls(wrapper, video)
+          const onPointerLeave = () => scheduleHide()
+          const onInteract = () => {
+            showControls(wrapper, video)
+            scheduleHide()
+          }
+          const onPause = () => showControls(wrapper, video)
+          const onPlay = () => scheduleHide()
+
+          wrapper.addEventListener('mouseenter', onPointerEnter)
+          wrapper.addEventListener('mouseleave', onPointerLeave)
+          wrapper.addEventListener('focusin', onPointerEnter)
+          wrapper.addEventListener('focusout', onPointerLeave)
+          wrapper.addEventListener('touchstart', onInteract, { passive: true })
+          wrapper.addEventListener('click', onInteract)
+          video.addEventListener('play', onPlay)
+          video.addEventListener('pause', onPause)
+          video.addEventListener('ended', onPause)
+
+          if (!video.paused) {
+            scheduleHide()
+          }
+          if (video.paused) {
+            hideControls(wrapper, video)
+          }
+          teardownMap.set(video, () => {
+            clearTimeout(timer)
+            wrapper.removeEventListener('mouseenter', onPointerEnter)
+            wrapper.removeEventListener('mouseleave', onPointerLeave)
+            wrapper.removeEventListener('focusin', onPointerEnter)
+            wrapper.removeEventListener('focusout', onPointerLeave)
+            wrapper.removeEventListener('touchstart', onInteract)
+            wrapper.removeEventListener('click', onInteract)
+            video.removeEventListener('play', onPlay)
+            video.removeEventListener('pause', onPause)
+            video.removeEventListener('ended', onPause)
+          })
+        }
+
+        function scan() {
+          document.querySelectorAll('.content .media-video-wrap video').forEach(bindVideo)
+        }
+
+        const observer = new MutationObserver(scan)
+        observer.observe(document.body, { childList: true, subtree: true })
+        scan()
+      })()
+    </script>
   </body>
 </html>
