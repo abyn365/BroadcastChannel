@@ -563,6 +563,37 @@ return
       })
     }
 
+    function setupImageLoadingState(button) {
+      if (!(button instanceof HTMLElement) || button.dataset.mediaReady === 'true') return
+      const img = button.querySelector('img')
+      if (!(img instanceof HTMLImageElement)) return
+      button.dataset.mediaReady = 'true'
+
+      const ratioFromAttrs = Number(img.getAttribute('width')) / Number(img.getAttribute('height'))
+      const ratio = Number.isFinite(ratioFromAttrs) && ratioFromAttrs > 0 ? ratioFromAttrs : null
+      if (ratio) button.style.setProperty('--media-ar', `${ratio}`)
+
+      const applyShape = () => {
+        const w = img.naturalWidth || Number(img.getAttribute('width')) || 0
+        const h = img.naturalHeight || Number(img.getAttribute('height')) || 0
+        if (!w || !h) return
+        const ar = w / h
+        if (ar >= 2 || ar <= 0.58) button.dataset.mediaShape = ar >= 2 ? 'wide' : 'tall'
+        if (Math.min(w, h) <= 360) button.dataset.mediaShape = 'small'
+        button.style.setProperty('--media-ar', `${ar}`)
+        button.dataset.loaded = 'true'
+      }
+
+      if (img.complete) {
+        applyShape()
+      } else {
+        img.addEventListener('load', applyShape, { once: true })
+        img.addEventListener('error', () => {
+          button.dataset.loaded = 'true'
+        }, { once: true })
+      }
+    }
+
     function injectCarouselDots(group) {
       const items = group.querySelectorAll('.media-group__item')
       if (items.length < 2) 
@@ -604,5 +635,6 @@ return
     document.querySelectorAll('.content .media-group').forEach(setupSwipeableMediaGroup)
     document.querySelectorAll('.content .media-group').forEach(setupPlayfulMediaCards)
     document.querySelectorAll('.content .image-list-container').forEach(setupPlayfulMediaCards)
+    document.querySelectorAll('.content .image-preview-button').forEach(setupImageLoadingState)
   })()
 </script>
