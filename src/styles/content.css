@@ -285,87 +285,271 @@
       grid-column: 1 / 3;
     }
 
+    /* ── Media group (album / multi-video) ─── */
+    .media-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3px;
+      border-radius: var(--radius-media);
+      overflow: hidden;
+      margin: 0.5em 0;
+    }
+
+    /* Odd count: first item spans full width */
+    .media-group.media-group-odd .media-group__item:first-child {
+      grid-column: 1 / 3;
+    }
+
+    .media-group__item {
+      position: relative;
+      overflow: hidden;
+      background: var(--color-code);
+      /* Let the inner media-video-wrap drive the height */
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* The aspect-ratio wrapper produced by getVideos / extractMediaGroupContent */
+    .media-video-wrap {
+      position: relative;
+      width: 100%;
+      /* Fallback aspect ratio if none is inferred from Telegram styles */
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: var(--radius-media);
+      overflow: hidden;
+    }
+
+    /* Inside a grid cell, remove the outer radius so cells tile flush */
+    .media-group__item .media-video-wrap {
+      border-radius: 0;
+      flex: 1;
+    }
+
+    .media-video-wrap video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      border-radius: 0 !important;
+    }
+
+    /* Single standalone video (not in a grid) */
+    .content > .media-video-wrap,
+    .content .media-video-wrap:not(.media-group__item .media-video-wrap) {
+      margin: 0.5em 0;
+    }
+
+    .media-group__caption {
+      padding-top: 0.5em;
+      font-size: 0.93em;
+      color: var(--color-ink);
+      line-height: 1.6;
+    }
+
     /* ── Link preview ───────────────────────── */
+    /* Base: hidden until we know what kind it is */
     .tgme_widget_message_link_preview {
       margin-top: 14px;
       display: none;
       border-radius: var(--radius-md);
       overflow: hidden;
-
-      .link_preview_site_name,
-      .link_preview_title,
-      .link_preview_description {
-        display: none;
-      }
     }
 
-    .tgme_widget_message_link_preview:has(.link_preview_site_name),
-    .tgme_widget_message_link_preview.tgme_widget_message_link_preview--text {
+    /* Text-only preview (no image) */
+    .tgme_widget_message_link_preview--text,
+    .tgme_widget_message_link_preview:has(.link_preview_site_name):not(.tgme_widget_message_link_preview--image):not(.tgme_widget_message_link_preview--has-image) {
       display: block;
       background: linear-gradient(135deg, var(--surface-1), var(--surface-2));
       border-left: 3px solid var(--color-accent);
       padding: 8px 12px;
       border-radius: 0 var(--radius-panel) var(--radius-panel) 0;
-
-      .link_preview_title {
-        display: block;
-        font-size: 0.96em;
-        font-weight: 600;
-        line-height: 1.5;
-        color: var(--color-heading);
-      }
-      .link_preview_description {
-        display: block;
-        font-size: 0.82em;
-        line-height: 1.5;
-        color: var(--color-muted);
-        margin-top: 2px;
-      }
     }
 
-    .tgme_widget_message_video,
-    .tgme_widget_message_roundvideo {
-      aspect-ratio: 1 / 1;
-      border-radius: var(--radius-media);
-      overflow: hidden;
-    }
-
-    .tgme_widget_message_link_preview:has(.link_preview_image),
-    .tgme_widget_message_link_preview.tgme_widget_message_link_preview--image {
+    /* Image-bearing preview — the two classes set by getLinkPreview */
+    .tgme_widget_message_link_preview--image,
+    .tgme_widget_message_link_preview--has-image,
+    .tgme_widget_message_link_preview:has(> .link_preview_image) {
       display: flex;
+      flex-direction: column;
       position: relative;
       border: none;
       padding: 0;
       background: transparent;
+    }
 
-      .link_preview_image {
-        aspect-ratio: 1200 / 630;
-        object-fit: cover;
-        border-radius: var(--radius-md);
-        width: 100%;
+    /* Ensure link_preview_site_name/title show in text-only variant */
+    .tgme_widget_message_link_preview--text .link_preview_site_name,
+    .tgme_widget_message_link_preview:has(.link_preview_site_name):not(.tgme_widget_message_link_preview--image):not(.tgme_widget_message_link_preview--has-image) .link_preview_site_name {
+      display: block;
+    }
+
+    .tgme_widget_message_link_preview--text .link_preview_title,
+    .tgme_widget_message_link_preview:has(.link_preview_site_name):not(.tgme_widget_message_link_preview--image):not(.tgme_widget_message_link_preview--has-image) .link_preview_title {
+      display: block;
+      font-size: 0.96em;
+      font-weight: 600;
+      line-height: 1.5;
+      color: var(--color-heading);
+    }
+
+    .tgme_widget_message_link_preview--text .link_preview_description,
+    .tgme_widget_message_link_preview:has(.link_preview_site_name):not(.tgme_widget_message_link_preview--image):not(.tgme_widget_message_link_preview--has-image) .link_preview_description {
+      display: block;
+      font-size: 0.82em;
+      line-height: 1.5;
+      color: var(--color-muted);
+      margin-top: 2px;
+    }
+
+    /* The normalized OG image injected by getLinkPreview */
+    .tgme_widget_message_link_preview--image .link_preview_image,
+    .tgme_widget_message_link_preview--has-image .link_preview_image,
+    .tgme_widget_message_link_preview:has(> .link_preview_image) .link_preview_image {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      aspect-ratio: 1200 / 630;
+      object-fit: cover;
+      border-radius: var(--radius-md);
+    }
+
+    /* Site name pill overlaid on image */
+    .tgme_widget_message_link_preview--image .link_preview_site_name,
+    .tgme_widget_message_link_preview--has-image .link_preview_site_name,
+    .tgme_widget_message_link_preview:has(> .link_preview_image) .link_preview_site_name {
+      display: block;
+      position: absolute;
+      bottom: var(--box-margin);
+      left: var(--box-margin);
+      padding: 2px 8px;
+      background: rgba(0, 0, 0, 0.68);
+      backdrop-filter: blur(8px);
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.92);
+      line-height: 1.6;
+      border-radius: 99px;
+      text-overflow: ellipsis;
+      max-width: calc(100% - 28px);
+      white-space: nowrap;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    /* Hide title/desc when image is present */
+    .tgme_widget_message_link_preview--image .link_preview_title,
+    .tgme_widget_message_link_preview--image .link_preview_description,
+    .tgme_widget_message_link_preview--has-image .link_preview_title,
+    .tgme_widget_message_link_preview--has-image .link_preview_description {
+      display: none;
+    }
+
+    /* Hide these generic Telegram children inside link previews; getLinkPreview normalizes them */
+    .tgme_widget_message_link_preview .link_preview_site_name:not(:only-of-type),
+    .tgme_widget_message_link_preview .link_preview_image_wrap,
+    .tgme_widget_message_link_preview .link_preview_photo,
+    .tgme_widget_message_link_preview .link_preview_photo_wrap {
+      display: none;
+    }
+
+    .tgme_widget_message_video,
+    .tgme_widget_message_roundvideo {
+      /* These Telegram classes are superseded by .media-video-wrap; kept for safety */
+      overflow: hidden;
+    }
+
+    .tgme_widget_message_video_wrap {
+      display: none;
+    }
+
+    video {
+      border-radius: var(--radius-media);
+      max-width: 100%;
+      display: block;
+    }
+
+    /* ── Poll ───────────────────────────────── */
+    .tgme_widget_message_poll_options {
+      display: block;
+      .tgme_widget_message_poll_option_percent {
+        float: left;
+        margin-right: 8px;
+        font-weight: 600;
+        color: var(--color-accent);
       }
+    }
 
-      .link_preview_site_name {
-        display: block;
+    /* ── Location ───────────────────────────── */
+    .tgme_widget_message_location_wrap {
+      display: block;
+      border-radius: var(--radius-media);
+      overflow: hidden;
+      border: 1px solid var(--color-line);
+      .tgme_widget_message_location {
+        padding-top: 50%;
+        background: no-repeat center;
+        background-size: cover;
+      }
+    }
+
+    /* ── Emoji ──────────────────────────────── */
+    .emoji {
+      font-style: normal;
+      margin-right: 1px;
+    }
+    .tg-emoji {
+      width: 1.15em;
+      height: 1.15em;
+      vertical-align: -0.15em;
+    }
+    .sticker {
+      width: auto;
+      max-width: min(220px, calc(100% - 1px));
+      height: auto;
+      box-shadow: none;
+      border: none;
+    }
+
+    /* ── Spoiler ────────────────────────────── */
+    .spoiler-button {
+      cursor: pointer;
+      display: inline;
+
+      input {
         position: absolute;
-        bottom: var(--box-margin);
-        left: var(--box-margin);
-        padding: 2px 8px;
-        background: rgba(0, 0, 0, 0.68);
-        backdrop-filter: blur(8px);
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.92);
-        line-height: 1.6;
-        border-radius: 99px;
-        text-overflow: ellipsis;
-        max-width: calc(100% - 28px);
-        white-space: nowrap;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
         overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
       }
 
-      .link_preview_title,
-      .link_preview_description {
-        display: none;
+      tg-spoiler {
+        color: transparent;
+        margin: auto 2px;
+        border-radius: var(--radius-panel);
+        background: #ccc 60% 60% / 3000px 3000px;
+        background-image: repeating-conic-gradient(#999 0 0.0001%, #0000 0 0.0002%);
+        transition:
+          background 0.25s ease,
+          color 0.25s ease;
+      }
+
+      input:checked + tg-spoiler {
+        background: unset;
+        color: unset;
+      }
+
+      &:has(input:focus-visible) {
+        outline: 2px solid var(--color-heading);
+        outline-offset: 2px;
+        border-radius: 3px;
       }
     }
 
@@ -477,97 +661,6 @@
       display: block !important;
       width: 100%;
       border-radius: var(--radius-md);
-    }
-
-    .tgme_widget_message_video_wrap {
-      display: none;
-    }
-
-    video {
-      border-radius: var(--radius-media);
-      max-width: 100%;
-    }
-
-    /* ── Poll ───────────────────────────────── */
-    .tgme_widget_message_poll_options {
-      display: block;
-      .tgme_widget_message_poll_option_percent {
-        float: left;
-        margin-right: 8px;
-        font-weight: 600;
-        color: var(--color-accent);
-      }
-    }
-
-    /* ── Location ───────────────────────────── */
-    .tgme_widget_message_location_wrap {
-      display: block;
-      border-radius: var(--radius-media);
-      overflow: hidden;
-      border: 1px solid var(--color-line);
-      .tgme_widget_message_location {
-        padding-top: 50%;
-        background: no-repeat center;
-        background-size: cover;
-      }
-    }
-
-    /* ── Emoji ──────────────────────────────── */
-    .emoji {
-      font-style: normal;
-      margin-right: 1px;
-    }
-    .tg-emoji {
-      width: 1.15em;
-      height: 1.15em;
-      vertical-align: -0.15em;
-    }
-    .sticker {
-      width: auto;
-      max-width: min(220px, calc(100% - 1px));
-      height: auto;
-      box-shadow: none;
-      border: none;
-    }
-
-    /* ── Spoiler ────────────────────────────── */
-    .spoiler-button {
-      cursor: pointer;
-      display: inline;
-
-      input {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
-      }
-
-      tg-spoiler {
-        color: transparent;
-        margin: auto 2px;
-        border-radius: var(--radius-panel);
-        background: #ccc 60% 60% / 3000px 3000px;
-        background-image: repeating-conic-gradient(#999 0 0.0001%, #0000 0 0.0002%);
-        transition:
-          background 0.25s ease,
-          color 0.25s ease;
-      }
-
-      input:checked + tg-spoiler {
-        background: unset;
-        color: unset;
-      }
-
-      &:has(input:focus-visible) {
-        outline: 2px solid var(--color-heading);
-        outline-offset: 2px;
-        border-radius: 3px;
-      }
     }
 
     /* ── Popover / image preview ─────────────*/
@@ -742,6 +835,19 @@
 
       .image-list-container {
         gap: 2px;
+      }
+
+      .media-group {
+        gap: 2px;
+      }
+
+      /* On narrow screens cap video height so tall portrait videos don't dominate */
+      .media-video-wrap {
+        max-height: 360px;
+      }
+
+      .media-video-wrap video {
+        object-fit: contain;
       }
     }
   }

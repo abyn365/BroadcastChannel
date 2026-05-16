@@ -318,9 +318,10 @@ function getVideos($: CheerioAPI, message: MessageSelection, options: IndexedSta
   const { staticProxy = '', index = 0 } = options
   const fragments: string[] = []
 
-  // Collect regular videos
+  // Collect regular videos — preserve aspect ratio from the wrap's padding-top style
   for (const wrapNode of message.find('.tgme_widget_message_video_wrap').toArray()) {
-    const video = $(wrapNode).find('video')
+    const wrap = $(wrapNode)
+    const video = wrap.find('video')
     const videoSrc = video.attr('src')
 
     if (videoSrc) {
@@ -333,13 +334,17 @@ function getVideos($: CheerioAPI, message: MessageSelection, options: IndexedSta
       .attr('playsinline', '')
       .attr('webkit-playsinline', '')
 
+    // Derive aspect ratio from the Telegram padding-top trick (e.g. padding-top:56.25% → 16/9)
+    const paddingTop = getStylePaddingTop(wrap.find('i').attr('style') ?? wrap.attr('style'))
+    const aspectStyle = paddingTop ? ` style="aspect-ratio:${(100 / paddingTop).toFixed(4)}"` : ''
+
     const html = $.html(video)
     if (html) {
-      fragments.push(html)
+      fragments.push(`<div class="media-video-wrap"${aspectStyle}>${html}</div>`)
     }
   }
 
-  // Collect round videos
+  // Collect round videos (always 1:1)
   for (const wrapNode of message.find('.tgme_widget_message_roundvideo_wrap').toArray()) {
     const video = $(wrapNode).find('video')
     const videoSrc = video.attr('src')
@@ -356,7 +361,7 @@ function getVideos($: CheerioAPI, message: MessageSelection, options: IndexedSta
 
     const html = $.html(video)
     if (html) {
-      fragments.push(html)
+      fragments.push(`<div class="media-video-wrap" style="aspect-ratio:1">${html}</div>`)
     }
   }
 
@@ -364,13 +369,13 @@ function getVideos($: CheerioAPI, message: MessageSelection, options: IndexedSta
     return ''
   }
 
-  // Render as a media group grid when there are multiple videos
+  // Single video: just the aspect-ratio wrapper, no grid chrome
   if (fragments.length === 1) {
     return fragments[0]
   }
 
-  const isEven = fragments.length % 2 === 0
-  const gridClass = isEven ? 'media-group-even' : 'media-group-odd'
+  // Multiple videos: 2-column grid, first item full-width when count is odd
+  const gridClass = fragments.length % 2 === 0 ? 'media-group-even' : 'media-group-odd'
   return `<div class="media-group ${gridClass}">${fragments.map(f => `<div class="media-group__item">${f}</div>`).join('')}</div>`
 }
 
@@ -612,7 +617,9 @@ async function extractMediaGroupContent(
 
     // Videos in this sub-message
     for (const wrapNode of msg.find('.tgme_widget_message_video_wrap, .tgme_widget_message_roundvideo_wrap').toArray()) {
-      const video = $(wrapNode).find('video')
+      const wrap = $(wrapNode)
+      const isRound = wrap.hasClass('tgme_widget_message_roundvideo_wrap')
+      const video = wrap.find('video')
       const videoSrc = video.attr('src')
       if (videoSrc) {
         video.attr('src', staticProxy + videoSrc)
@@ -623,9 +630,12 @@ async function extractMediaGroupContent(
         .attr('playsinline', '')
         .attr('webkit-playsinline', '')
 
+      const paddingTop = isRound ? null : getStylePaddingTop(wrap.find('i').attr('style') ?? wrap.attr('style'))
+      const aspectStyle = isRound ? ' style="aspect-ratio:1"' : paddingTop ? ` style="aspect-ratio:${(100 / paddingTop).toFixed(4)}"` : ''
+
       const html = $.html(video)
       if (html) {
-        videoFragments.push(html)
+        videoFragments.push(`<div class="media-video-wrap"${aspectStyle}>${html}</div>`)
       }
     }
 
@@ -824,15 +834,10 @@ async function extractMediaGroupPost($: CheerioAPI, item: AnyNode, options: Extr
 
   const title = captionText.match(TITLE_PREVIEW_REGEX)?.[0] ?? captionText ?? ''
 
-  // Build the unified media HTML
+  // Build the unified media HTML — caption is already appended inside extractMediaGroupContent
   const groupContent = await extractMediaGroupContent($, item, { ...options, index })
 
-  const contentHtml = [
-    groupContent,
-    captionHtml ? `<div class="media-group__caption">${captionHtml}</div>` : '',
-  ]
-    .filter(isNonEmptyString)
-    .join('')
+  const contentHtml = groupContent
     .replace(CONTENT_URL_REGEX, (_match, prefix: string, protocol: string) => {
       const normalizedProtocol = protocol === '//' ? 'https://' : protocol
       return `${prefix}${staticProxy}${normalizedProtocol}`
