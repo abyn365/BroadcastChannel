@@ -277,6 +277,7 @@ function getImages($: CheerioAPI, message: MessageSelection, options: MessageAss
       <button
         type="button"
         class="image-preview-button image-preview-wrap"
+        style="--media-ar:${width}/${height}"
         popovertarget="${popoverId}"
         popovertargetaction="show"
         aria-label="${safePreviewLabel}"

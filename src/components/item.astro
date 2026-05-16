@@ -135,7 +135,8 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
     function renderWidget(target, limit) {
       const discussion = target.dataset.discussion
-      if (!discussion) return
+      if (!discussion) 
+return
 
       const script = document.createElement('script')
       script.async = true
@@ -143,13 +144,15 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       script.setAttribute('data-telegram-discussion', discussion)
       script.setAttribute('data-comments-limit', limit)
       script.setAttribute('data-colorful', '1')
-      if (currentTheme() === 'dark') script.setAttribute('data-dark', '1')
+      if (currentTheme() === 'dark') 
+script.setAttribute('data-dark', '1')
       target.replaceChildren(script)
     }
 
     document.querySelectorAll('details[data-comments]').forEach((details) => {
       const target = details.querySelector('[data-telegram-comments]')
-      if (!(target instanceof HTMLElement)) return
+      if (!(target instanceof HTMLElement)) 
+return
 
       const meta = details.querySelector('[data-comments-meta]')
       const previewLimit = target.dataset.previewLimit || '3'
@@ -187,7 +190,8 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
     const EASE_SMOOTH = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
     function setupMediaVideo(video) {
-      if (!(video instanceof HTMLVideoElement) || video.dataset.enhanced === 'true') return
+      if (!(video instanceof HTMLVideoElement) || video.dataset.enhanced === 'true') 
+return
 
       video.dataset.enhanced = 'true'
       video.controls = false
@@ -195,25 +199,39 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       video.playsInline = true
 
       const wrap = video.closest('.media-video-wrap')
-      if (!(wrap instanceof HTMLElement)) return
+      if (!(wrap instanceof HTMLElement)) 
+return
 
       // Inject glassmorphic control overlay
       injectVideoControls(video, wrap)
 
+      let hideTimer
+      const queueHideControls = (delay = 1800) => {
+        clearTimeout(hideTimer)
+        hideTimer = setTimeout(() => {
+          if (video.paused || document.fullscreenElement === wrap) 
+return
+          wrap.removeAttribute('data-interacted')
+        }, delay)
+      }
+
       const showControls = () => {
         wrap.dataset.interacted = 'true'
         video.controls = false // always use custom controls
+        queueHideControls(video.paused ? 2400 : 1700)
       }
 
       const hideControls = () => {
-        if (!video.paused || document.fullscreenElement === wrap) return
+        if (document.fullscreenElement === wrap) 
+return
         wrap.removeAttribute('data-interacted')
       }
 
       wrap.addEventListener('mouseenter', showControls)
-      wrap.addEventListener('mouseleave', () => setTimeout(hideControls, 1200))
+      wrap.addEventListener('mousemove', () => showControls())
+      wrap.addEventListener('mouseleave', () => setTimeout(hideControls, 800))
       wrap.addEventListener('focusin', showControls)
-      wrap.addEventListener('focusout', () => setTimeout(hideControls, 120))
+      wrap.addEventListener('focusout', () => setTimeout(hideControls, 320))
 
       // Tap to toggle play/pause + show controls
       wrap.addEventListener('pointerdown', (e) => {
@@ -226,7 +244,7 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       })
 
       video.addEventListener('play', showControls)
-      video.addEventListener('pause', () => setTimeout(hideControls, 900))
+      video.addEventListener('pause', () => setTimeout(hideControls, 1200))
       video.addEventListener('ended', () => {
         wrap.removeAttribute('data-interacted')
         // Auto-advance in carousel
@@ -237,14 +255,18 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       })
 
       document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement === wrap) { showControls(); return }
+        if (document.fullscreenElement === wrap) {
+          showControls()
+          return
+        }
         hideControls()
       })
     }
 
     function injectVideoControls(video, wrap) {
       // Don't double-inject
-      if (wrap.querySelector('.glass-controls')) return
+      if (wrap.querySelector('.glass-controls')) 
+return
 
       const ctrl = document.createElement('div')
       ctrl.className = 'glass-controls'
@@ -303,8 +325,14 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
       // Also tap on video itself toggles play (not on controls)
       wrap.addEventListener('click', (e) => {
-        if (e.target === ctrl || ctrl.contains(e.target)) return
-        if (video.paused) { video.play() } else { video.pause() }
+        if (e.target === ctrl || ctrl.contains(e.target)) 
+return
+        if (video.paused) {
+          video.play()
+        }
+ else {
+          video.pause()
+        }
         wrap.dataset.interacted = 'true'
       })
 
@@ -324,7 +352,8 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
       // — Progress bar
       video.addEventListener('timeupdate', () => {
-        if (!video.duration) return
+        if (!video.duration) 
+return
         const pct = (video.currentTime / video.duration) * 100
         progressFill.style.width = `${pct}%`
       })
@@ -364,15 +393,18 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       const items = Array.from(group.querySelectorAll('.media-group__item'))
       const currentItem = currentWrap.closest('.media-group__item')
       const currentIdx = items.indexOf(currentItem)
-      if (currentIdx < 0 || currentIdx >= items.length - 1) return
+      if (currentIdx < 0 || currentIdx >= items.length - 1) 
+return
 
       const nextItem = items[currentIdx + 1]
-      if (!nextItem) return
+      if (!nextItem) 
+return
 
       // Brief pause then smooth scroll
       setTimeout(() => {
         // Don't auto-advance if user recently interacted
-        if (group.dataset.userInteracted === 'true') return
+        if (group.dataset.userInteracted === 'true') 
+return
 
         const itemWidth = nextItem.offsetWidth
         const gap = 10
@@ -391,7 +423,8 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
     }
 
     function setupSwipeableMediaGroup(group) {
-      if (!(group instanceof HTMLElement) || group.dataset.swipeReady === 'true') return
+      if (!(group instanceof HTMLElement) || group.dataset.swipeReady === 'true') 
+return
 
       group.dataset.swipeReady = 'true'
 
@@ -426,7 +459,8 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       }
 
       group.addEventListener('pointerdown', (event) => {
-        if (event.pointerType !== 'touch' && event.pointerType !== 'mouse') return
+        if (event.pointerType !== 'touch' && event.pointerType !== 'mouse') 
+return
         startX = event.clientX
         startY = event.clientY
         lastX = startX
@@ -440,7 +474,8 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       })
 
       group.addEventListener('pointermove', (event) => {
-        if (!dragging || pointerId !== event.pointerId) return
+        if (!dragging || pointerId !== event.pointerId) 
+return
 
         const dx = event.clientX - startX
         const dy = event.clientY - startY
@@ -450,7 +485,8 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
             horizontalSwipe = true
             group.dataset.swiping = 'true'
             group.querySelectorAll('.media-video-wrap video').forEach((v) => {
-              if (v instanceof HTMLVideoElement) v.controls = false
+              if (v instanceof HTMLVideoElement) 
+v.controls = false
             })
           }
           if (!horizontalSwipe && Math.abs(dy) >= 12 && Math.abs(dy) > Math.abs(dx)) {
@@ -464,15 +500,18 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
           // Rubber band at edges
           let newLeft = startScrollLeft - dx
           const maxScroll = group.scrollWidth - group.clientWidth
-          if (newLeft < 0) newLeft = newLeft * 0.3
-          if (newLeft > maxScroll) newLeft = maxScroll + (newLeft - maxScroll) * 0.3
+          if (newLeft < 0) 
+newLeft = newLeft * 0.3
+          if (newLeft > maxScroll) 
+newLeft = maxScroll + (newLeft - maxScroll) * 0.3
           group.scrollLeft = newLeft
           lastX = event.clientX
         }
       })
 
       group.addEventListener('pointerup', (event) => {
-        if (pointerId !== event.pointerId) return
+        if (pointerId !== event.pointerId) 
+return
 
         if (horizontalSwipe) {
           const elapsed = Math.max(1, Date.now() - startTime)
@@ -494,15 +533,75 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
       // Update dots on scroll end
       let scrollEndTimer
-      group.addEventListener('scroll', () => {
-        clearTimeout(scrollEndTimer)
-        scrollEndTimer = setTimeout(() => updateCarouselDots(group), 80)
-      }, { passive: true })
+      group.addEventListener(
+        'scroll',
+        () => {
+          clearTimeout(scrollEndTimer)
+          scrollEndTimer = setTimeout(updateCarouselDots, 80, group)
+        },
+        { passive: true },
+      )
+    }
+
+    function setupPlayfulMediaCards(root) {
+      if (!(root instanceof HTMLElement) || root.dataset.cardified === 'true') 
+return
+      root.dataset.cardified = 'true'
+
+      const cards = root.querySelectorAll(':scope > .media-group__item, :scope > .image-preview-button')
+      cards.forEach((card, index) => {
+        if (!(card instanceof HTMLElement)) 
+return
+        const seed = (index + 1) * 2.13
+        const rotate = (Math.sin(seed) * 1.35 + Math.cos(seed * 0.65) * 0.45).toFixed(2)
+        const driftX = (Math.cos(seed * 0.7) * 3.2).toFixed(2)
+        const driftY = (Math.sin(seed * 0.9) * 2.2).toFixed(2)
+        card.style.setProperty('--card-rotate', `${rotate}deg`)
+        card.style.setProperty('--card-drift-x', `${driftX}px`)
+        card.style.setProperty('--card-drift-y', `${driftY}px`)
+        card.style.setProperty('--card-delay', `${(index % 6) * 120}ms`)
+      })
+    }
+
+    function setupImageLoadingState(button) {
+      if (!(button instanceof HTMLElement) || button.dataset.mediaReady === 'true') return
+      const img = button.querySelector('img')
+      if (!(img instanceof HTMLImageElement)) return
+      button.dataset.mediaReady = 'true'
+
+      const ratioFromAttrs = Number(img.getAttribute('width')) / Number(img.getAttribute('height'))
+      const ratio = Number.isFinite(ratioFromAttrs) && ratioFromAttrs > 0 ? ratioFromAttrs : null
+      if (ratio) button.style.setProperty('--media-ar', `${ratio}`)
+
+      const applyShape = () => {
+        const w = img.naturalWidth || Number(img.getAttribute('width')) || 0
+        const h = img.naturalHeight || Number(img.getAttribute('height')) || 0
+        if (!w || !h) return
+        const ar = w / h
+        if (ar >= 2 || ar <= 0.58) button.dataset.mediaShape = ar >= 2 ? 'wide' : 'tall'
+        if (Math.min(w, h) <= 360) button.dataset.mediaShape = 'small'
+        button.style.setProperty('--media-ar', `${ar}`)
+        button.dataset.loaded = 'true'
+      }
+
+      if (img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
+        applyShape()
+      } else {
+        const onLoad = () => {
+          applyShape()
+        }
+        img.addEventListener('load', onLoad, { once: true })
+        img.addEventListener('error', () => {
+          button.dataset.loaded = 'true'
+        }, { once: true })
+        img.decode?.().then(applyShape).catch(() => {})
+      }
     }
 
     function injectCarouselDots(group) {
       const items = group.querySelectorAll('.media-group__item')
-      if (items.length < 2) return
+      if (items.length < 2) 
+return
 
       const dotsWrap = document.createElement('div')
       dotsWrap.className = 'carousel-dots'
@@ -510,7 +609,7 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
       Array.from(items).forEach((_, i) => {
         const dot = document.createElement('span')
-        dot.className = 'carousel-dot' + (i === 0 ? ' carousel-dot--active' : '')
+        dot.className = `carousel-dot${i === 0 ? ' carousel-dot--active' : ''}`
         dotsWrap.appendChild(dot)
       })
 
@@ -521,9 +620,11 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
     function updateCarouselDots(group) {
       const dotsWrap = group._dotsEl
-      if (!dotsWrap) return
+      if (!dotsWrap) 
+return
       const items = Array.from(group.querySelectorAll('.media-group__item'))
-      if (!items.length) return
+      if (!items.length) 
+return
 
       const itemWidth = items[0].offsetWidth + 10
       const activeIdx = Math.round(group.scrollLeft / itemWidth)
@@ -536,5 +637,8 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
     // Init all media
     document.querySelectorAll('.content .media-video-wrap video').forEach(setupMediaVideo)
     document.querySelectorAll('.content .media-group').forEach(setupSwipeableMediaGroup)
+    document.querySelectorAll('.content .media-group').forEach(setupPlayfulMediaCards)
+    document.querySelectorAll('.content .image-list-container').forEach(setupPlayfulMediaCards)
+    document.querySelectorAll('.content .image-preview-button').forEach(setupImageLoadingState)
   })()
 </script>
