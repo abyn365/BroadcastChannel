@@ -889,14 +889,19 @@
         display: flex;
         gap: 8px;
         overflow-x: auto;
-        padding-bottom: 2px;
+        padding: 2px 2px 14px;
+        margin-bottom: 6px;
         scroll-snap-type: x mandatory;
+        scroll-padding-inline: 6vw;
         -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+        touch-action: pan-x pan-y;
       }
 
       .media-group__item {
         min-width: min(88vw, 460px);
         scroll-snap-align: center;
+        padding-bottom: 6px;
       }
 
       .media-group.media-group-odd .media-group__item:first-child {
@@ -906,6 +911,15 @@
       /* On narrow screens cap video height so tall portrait videos don't dominate */
       .media-video-wrap {
         max-height: 360px;
+      }
+
+      .media-group .media-video-wrap::after {
+        content: '';
+        position: absolute;
+        inset-inline: 0;
+        bottom: -12px;
+        height: 24px;
+        pointer-events: none;
       }
 
       .media-video-wrap video {

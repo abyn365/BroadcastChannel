@@ -201,6 +201,9 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       }
 
       const showControls = () => {
+        if (wrap.dataset.swiping === 'true') {
+          return
+        }
         wrap.dataset.interacted = 'true'
         video.controls = true
       }
@@ -231,6 +234,131 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       })
     }
 
+    function setupMediaGroup(group) {
+      if (!(group instanceof HTMLElement) || group.dataset.enhanced === 'true') {
+        return
+      }
+      group.dataset.enhanced = 'true'
+
+      const isTouchDevice = window.matchMedia('(pointer: coarse)').matches
+      if (!isTouchDevice) {
+        return
+      }
+
+      let startX = 0
+      let startY = 0
+      let startTime = 0
+      let startScrollLeft = 0
+      let activePointerId = -1
+      let dragging = false
+      let startedOnSeekZone = false
+
+      const getItemWidth = () => {
+        const firstItem = group.querySelector('.media-group__item')
+        if (!(firstItem instanceof HTMLElement)) {
+          return group.clientWidth || 1
+        }
+        const itemRect = firstItem.getBoundingClientRect()
+        return itemRect.width + 8
+      }
+
+      group.addEventListener(
+        'pointerdown',
+        (event) => {
+          if (event.pointerType !== 'touch' || activePointerId !== -1) {
+            return
+          }
+
+          const target = event.target
+          if (!(target instanceof Element)) {
+            return
+          }
+
+          const videoWrap = target.closest('.media-video-wrap')
+          if (!(videoWrap instanceof HTMLElement)) {
+            return
+          }
+
+          const rect = videoWrap.getBoundingClientRect()
+          const relativeY = event.clientY - rect.top
+          startedOnSeekZone = rect.height - relativeY < 62
+          startX = event.clientX
+          startY = event.clientY
+          startTime = performance.now()
+          startScrollLeft = group.scrollLeft
+          dragging = false
+          activePointerId = event.pointerId
+        },
+        { passive: true },
+      )
+
+      group.addEventListener(
+        'pointermove',
+        (event) => {
+          if (event.pointerId !== activePointerId || startedOnSeekZone) {
+            return
+          }
+
+          const deltaX = event.clientX - startX
+          const deltaY = event.clientY - startY
+          const absX = Math.abs(deltaX)
+          const absY = Math.abs(deltaY)
+          if (!dragging) {
+            if (absX < 12 || absX <= absY * 1.15) {
+              return
+            }
+            dragging = true
+            group.dataset.swiping = 'true'
+            const wrap = event.target instanceof Element ? event.target.closest('.media-video-wrap') : null
+            const video = wrap?.querySelector('video')
+            if (video instanceof HTMLVideoElement) {
+              video.controls = false
+            }
+          }
+
+          event.preventDefault()
+          group.scrollLeft = startScrollLeft - deltaX
+        },
+        { passive: false },
+      )
+
+      const endSwipe = (event) => {
+        if (event.pointerId !== activePointerId) {
+          return
+        }
+
+        const elapsed = Math.max(1, performance.now() - startTime)
+        const distanceX = event.clientX - startX
+        const velocity = distanceX / elapsed
+        const itemWidth = getItemWidth()
+        const baseIndex = Math.round(startScrollLeft / itemWidth)
+        const moved = Math.abs(distanceX)
+        const fastFlick = Math.abs(velocity) > 0.55
+        const shouldMove = dragging && (moved > itemWidth * 0.16 || fastFlick)
+        const direction = distanceX < 0 ? 1 : -1
+        const nextIndex = shouldMove ? Math.max(0, baseIndex + direction) : baseIndex
+
+        group.scrollTo({
+          left: nextIndex * itemWidth,
+          behavior: 'smooth',
+        })
+
+        if (dragging) {
+          setTimeout(() => {
+            delete group.dataset.swiping
+          }, 160)
+        }
+
+        activePointerId = -1
+        dragging = false
+        startedOnSeekZone = false
+      }
+
+      group.addEventListener('pointerup', endSwipe, { passive: true })
+      group.addEventListener('pointercancel', endSwipe, { passive: true })
+    }
+
     document.querySelectorAll('.content .media-video-wrap video').forEach(setupMediaVideo)
+    document.querySelectorAll('.content .media-group').forEach(setupMediaGroup)
   })()
 </script>
