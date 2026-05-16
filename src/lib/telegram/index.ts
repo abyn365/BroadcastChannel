@@ -57,7 +57,7 @@ interface LoadedChannelDocument {
 const cache = new LRUCache<string, CacheValue>({
   ttl: 1000 * 60 * 5,
   maxSize: 50 * 1024 * 1024,
-  sizeCalculation: item => JSON.stringify(item).length,
+  sizeCalculation: (item: CacheValue) => JSON.stringify(item).length,
 })
 
 function cloneCacheValue<T extends CacheValue>(value: T): T {
@@ -313,35 +313,70 @@ function getImages($: CheerioAPI, message: MessageSelection, options: MessageAss
   return `<div class="image-list-container ${layoutClass}">${fragments.join('')}</div>`
 }
 
-function getVideo($: CheerioAPI, message: MessageSelection, options: IndexedStaticProxyOptions): string {
+// Extract all videos from a message set, returning them individually wrapped for the gallery
+function getVideos($: CheerioAPI, message: MessageSelection, options: IndexedStaticProxyOptions): string {
   const { staticProxy = '', index = 0 } = options
-  const video = message.find('.tgme_widget_message_video_wrap video')
-  const videoSrc = video.attr('src')
+  const fragments: string[] = []
 
-  if (videoSrc) {
-    video.attr('src', staticProxy + videoSrc)
+  // Collect regular videos
+  for (const wrapNode of message.find('.tgme_widget_message_video_wrap').toArray()) {
+    const video = $(wrapNode).find('video')
+    const videoSrc = video.attr('src')
+
+    if (videoSrc) {
+      video.attr('src', staticProxy + videoSrc)
+    }
+
+    video
+      .attr('controls', '')
+      .attr('preload', index > 15 ? 'metadata' : 'auto')
+      .attr('playsinline', '')
+      .attr('webkit-playsinline', '')
+
+    const html = $.html(video)
+    if (html) {
+      fragments.push(html)
+    }
   }
 
-  video
-    .attr('controls', '')
-    .attr('preload', index > 15 ? 'metadata' : 'auto')
-    .attr('playsinline', '')
-    .attr('webkit-playsinline', '')
+  // Collect round videos
+  for (const wrapNode of message.find('.tgme_widget_message_roundvideo_wrap').toArray()) {
+    const video = $(wrapNode).find('video')
+    const videoSrc = video.attr('src')
 
-  const roundVideo = message.find('.tgme_widget_message_roundvideo_wrap video')
-  const roundVideoSrc = roundVideo.attr('src')
+    if (videoSrc) {
+      video.attr('src', staticProxy + videoSrc)
+    }
 
-  if (roundVideoSrc) {
-    roundVideo.attr('src', staticProxy + roundVideoSrc)
+    video
+      .attr('controls', '')
+      .attr('preload', index > 15 ? 'metadata' : 'auto')
+      .attr('playsinline', '')
+      .attr('webkit-playsinline', '')
+
+    const html = $.html(video)
+    if (html) {
+      fragments.push(html)
+    }
   }
 
-  roundVideo
-    .attr('controls', '')
-    .attr('preload', index > 15 ? 'metadata' : 'auto')
-    .attr('playsinline', '')
-    .attr('webkit-playsinline', '')
+  if (!fragments.length) {
+    return ''
+  }
 
-  return $.html(video) + $.html(roundVideo)
+  // Render as a media group grid when there are multiple videos
+  if (fragments.length === 1) {
+    return fragments[0]
+  }
+
+  const isEven = fragments.length % 2 === 0
+  const gridClass = isEven ? 'media-group-even' : 'media-group-odd'
+  return `<div class="media-group ${gridClass}">${fragments.map(f => `<div class="media-group__item">${f}</div>`).join('')}</div>`
+}
+
+// Legacy single-video getter for backward compat (used in single-post pages)
+function getVideo($: CheerioAPI, message: MessageSelection, options: IndexedStaticProxyOptions): string {
+  return getVideos($, message, options)
 }
 
 function getAudio($: CheerioAPI, message: MessageSelection, options: StaticProxyOptions): string {
@@ -360,6 +395,11 @@ function getAudio($: CheerioAPI, message: MessageSelection, options: StaticProxy
 function getLinkPreview($: CheerioAPI, message: MessageSelection, options: IndexedStaticProxyOptions): string {
   const { staticProxy = '', index = 0 } = options
   const link = message.find('.tgme_widget_message_link_preview')
+
+  if (!link.length) {
+    return ''
+  }
+
   const title = message.find('.link_preview_title').text() || message.find('.link_preview_site_name').text()
   const description = message.find('.link_preview_description').text()
   const loading = getImageLoading(index)
@@ -369,21 +409,28 @@ function getLinkPreview($: CheerioAPI, message: MessageSelection, options: Index
 
   const image = message.find('.link_preview_image')
   const imageWrap = message.find('.link_preview_image_wrap')
+
+  // Broaden image URL detection: try every possible Telegram preview image pattern
   const previewUrl
     = image.attr('style')?.match(STYLE_URL_REGEX)?.[2]
       || message.find('.link_preview_image_wrap i').attr('style')?.match(STYLE_URL_REGEX)?.[2]
       || message.find('.link_preview_image img').attr('src')
       || imageWrap.find('img').attr('src')
+      // Additional patterns used by Telegram for external OG images
+      || message.find('.link_preview_thumb').attr('style')?.match(STYLE_URL_REGEX)?.[2]
+      || message.find('[class*="link_preview"] img').first().attr('src')
+      || message.find('[class*="link_preview"] [style*="background-image"]').first().attr('style')?.match(STYLE_URL_REGEX)?.[2]
 
   if (previewUrl) {
     const imageSrc = getMediaSrc(previewUrl, staticProxy)
-    const previewImage = `<img class="link_preview_image" alt="${safeTitle}" src="${imageSrc}" width="1200" height="630" loading="${loading}" />`
-    // Normalize Telegram's varying preview-image markup into one predictable
-    // inline image so CSS/visibility logic always targets the same element.
+    // Use natural dimensions so CSS controls the layout — avoid fixed 1200/630 attrs
+    // that can block the CSS width:100% from taking effect inside flex containers
+    const previewImage = `<img class="link_preview_image" alt="${safeTitle}" src="${imageSrc}" loading="${loading}" />`
+
+    // Remove all existing image-related children before prepending the normalized one
     link.find('.link_preview_image, .link_preview_image_wrap, .link_preview_photo, .link_preview_photo_wrap').remove()
     link.prepend(previewImage)
-
-    link.addClass('tgme_widget_message_link_preview--image')
+    link.addClass('tgme_widget_message_link_preview--has-image tgme_widget_message_link_preview--image')
   }
   else if (message.find('.link_preview_site_name').length || title || description) {
     link.addClass('tgme_widget_message_link_preview--text')
@@ -503,8 +550,147 @@ function getReactions($: CheerioAPI, message: MessageSelection, staticProxy: str
   return reactions
 }
 
+// Detect if a message wrap contains a Telegram media group (album):
+// multiple .tgme_widget_message siblings all sharing the same post ID prefix
+function isMediaGroup($: CheerioAPI, item: AnyNode): boolean {
+  const messages = $(item).find('.tgme_widget_message')
+  return messages.length > 1
+}
+
+// Build a unified content string for a media group (album) inside a single wrap.
+// Each sub-message may carry a video, image, or audio; the last one with text
+// wins as the caption.
+async function extractMediaGroupContent(
+  $: CheerioAPI,
+  item: AnyNode,
+  options: ExtractPostOptions,
+): Promise<string> {
+  const { staticProxy, index } = options
+  const messages = $(item).find('.tgme_widget_message')
+  const imageFragments: string[] = []
+  const videoFragments: string[] = []
+  const audioFragments: string[] = []
+  let captionHtml = ''
+  let captionId = ''
+  let lastCaptionText = ''
+
+  for (const [msgIndex, msgNode] of messages.toArray().entries()) {
+    const msg = $(msgNode)
+    const msgId = msg.attr('data-post')?.split('/').pop() ?? ''
+
+    // Images in this sub-message
+    for (const [photoIndex, photoNode] of msg.find('.tgme_widget_message_photo_wrap').toArray().entries()) {
+      const imageUrl = $(photoNode).attr('style')?.match(STYLE_URL_REGEX)?.[2]
+      if (!imageUrl) continue
+
+      const safeTitle = 'Image from post'
+      const safeLabel = 'Open image preview'
+      const safeClose = 'Close image preview'
+      const popoverId = `modal-album-${msgId}-${photoIndex}`
+      const { width, height } = inferImageDimensions($, photoNode)
+      const loading = getImageLoading(index ?? 0)
+
+      imageFragments.push(`
+        <button
+          type="button"
+          class="image-preview-button image-preview-wrap"
+          popovertarget="${popoverId}"
+          popovertargetaction="show"
+          aria-label="${safeLabel}"
+        >
+          <img src="${staticProxy + imageUrl}" alt="${safeTitle}" width="${width}" height="${height}" loading="${loading}" />
+        </button>
+        <div class="modal" id="${popoverId}" popover aria-label="Image preview">
+          <button type="button" class="modal__backdrop" popovertarget="${popoverId}" popovertargetaction="hide" aria-label="${safeClose}"></button>
+          <button type="button" class="modal__close" popovertarget="${popoverId}" popovertargetaction="hide" aria-label="${safeClose}">&times;</button>
+          <div class="modal__surface">
+            <img class="modal-img" src="${staticProxy + imageUrl}" alt="${safeTitle}" width="${width}" height="${height}" loading="lazy" />
+          </div>
+        </div>
+      `)
+    }
+
+    // Videos in this sub-message
+    for (const wrapNode of msg.find('.tgme_widget_message_video_wrap, .tgme_widget_message_roundvideo_wrap').toArray()) {
+      const video = $(wrapNode).find('video')
+      const videoSrc = video.attr('src')
+      if (videoSrc) {
+        video.attr('src', staticProxy + videoSrc)
+      }
+      video
+        .attr('controls', '')
+        .attr('preload', (index ?? 0) > 15 ? 'metadata' : 'auto')
+        .attr('playsinline', '')
+        .attr('webkit-playsinline', '')
+
+      const html = $.html(video)
+      if (html) {
+        videoFragments.push(html)
+      }
+    }
+
+    // Audio
+    const audio = msg.find('.tgme_widget_message_voice')
+    if (audio.length) {
+      const audioSrc = audio.attr('src')
+      if (audioSrc) audio.attr('src', staticProxy + audioSrc)
+      audio.attr('controls', '')
+      const html = $.html(audio)
+      if (html) audioFragments.push(html)
+    }
+
+    // Caption: last sub-message with text wins
+    const textSel = msg.find('.tgme_widget_message_text')
+    if (textSel.length && textSel.text().trim()) {
+      const modified = await modifyHTMLContent($, textSel, { index: index ?? msgIndex, staticProxy })
+      captionHtml = modified.html() ?? ''
+      captionId = msgId
+      lastCaptionText = textSel.text()
+    }
+  }
+
+  const allMedia: string[] = []
+
+  // Images grid
+  if (imageFragments.length) {
+    const layoutClass = imageFragments.length % 2 === 0 ? 'image-list-even' : 'image-list-odd'
+    allMedia.push(`<div class="image-list-container ${layoutClass}">${imageFragments.join('')}</div>`)
+  }
+
+  // Videos grid
+  if (videoFragments.length === 1) {
+    allMedia.push(videoFragments[0])
+  }
+  else if (videoFragments.length > 1) {
+    const gridClass = videoFragments.length % 2 === 0 ? 'media-group-even' : 'media-group-odd'
+    allMedia.push(
+      `<div class="media-group ${gridClass}">${videoFragments.map(f => `<div class="media-group__item">${f}</div>`).join('')}</div>`,
+    )
+  }
+
+  // Mixed images+videos: render videos in same grid as images when both present
+  // (already handled separately above — each gets its own grid section)
+
+  // Audio
+  for (const a of audioFragments) {
+    allMedia.push(a)
+  }
+
+  if (captionHtml) {
+    allMedia.push(`<div class="media-group__caption">${captionHtml}</div>`)
+  }
+
+  return allMedia.join('')
+}
+
 async function extractPost($: CheerioAPI, item: AnyNode | null, options: ExtractPostOptions): Promise<Post> {
   const { channel, staticProxy, index = 0, reactionsEnabled } = options
+
+  // Handle Telegram media group (album) — multiple .tgme_widget_message in one wrap
+  if (item && isMediaGroup($, item)) {
+    return extractMediaGroupPost($, item, options)
+  }
+
   const message = item ? $(item).find('.tgme_widget_message') : $('.tgme_widget_message')
   const hasReplyText = message.find('.js-message_reply_text').length > 0
   const content = await modifyHTMLContent(
@@ -546,8 +732,8 @@ async function extractPost($: CheerioAPI, item: AnyNode | null, options: Extract
     '.tgme_widget_message_link_preview',
   ].join(',')
 
-  const textNodeIndex = bubbleChildren.findIndex(node => hasSelfOrDescendant($(node), textSelector))
-  const firstMediaNodeIndex = bubbleChildren.findIndex(node => hasSelfOrDescendant($(node), mediaSelector))
+  const textNodeIndex = bubbleChildren.findIndex((node: AnyNode) => hasSelfOrDescendant($(node), textSelector))
+  const firstMediaNodeIndex = bubbleChildren.findIndex((node: AnyNode) => hasSelfOrDescendant($(node), mediaSelector))
 
   const textBeforeMedia
     = textNodeIndex >= 0
@@ -590,6 +776,79 @@ async function extractPost($: CheerioAPI, item: AnyNode | null, options: Extract
     text: contentText,
     content: contentHtml,
     reactions: reactionsEnabled ? getReactions($, message, staticProxy) : [],
+  }
+}
+
+// Dedicated extractor for Telegram media group (album) wraps that contain
+// multiple .tgme_widget_message siblings under one .tgme_widget_message_wrap.
+async function extractMediaGroupPost($: CheerioAPI, item: AnyNode, options: ExtractPostOptions): Promise<Post> {
+  const { channel, staticProxy, index = 0, reactionsEnabled } = options
+  const messages = $(item).find('.tgme_widget_message')
+
+  // Use the first message for metadata (id, datetime, reactions)
+  const firstMessage = messages.first()
+  const lastMessage = messages.last()
+
+  const rawId = firstMessage.attr('data-post') ?? lastMessage.attr('data-post') ?? ''
+  const id = rawId.replace(new RegExp(`${channel}/`, 'i'), '')
+  const datetime = firstMessage.find('.tgme_widget_message_date time').attr('datetime')
+    ?? lastMessage.find('.tgme_widget_message_date time').attr('datetime')
+    ?? ''
+
+  // Caption = text from the last sub-message that has any
+  let captionText = ''
+  let captionHtml = ''
+  const tags: string[] = []
+
+  for (const [msgIndex, msgNode] of messages.toArray().entries()) {
+    const msg = $(msgNode)
+    const textEl = msg.find('.tgme_widget_message_text').first()
+    if (textEl.length && textEl.text().trim()) {
+      const modified = await modifyHTMLContent($, textEl, { index: index + msgIndex, staticProxy })
+
+      // Collect tags
+      for (const tagNode of modified.find('a[href^="?q="]').toArray()) {
+        const tagLink = $(tagNode)
+        const tagText = tagLink.text()
+        tagLink.attr('href', `/search/result?q=${encodeURIComponent(tagText)}`)
+        const normalizedTag = tagText.replace('#', '')
+        if (normalizedTag && !tags.includes(normalizedTag)) {
+          tags.push(normalizedTag)
+        }
+      }
+
+      captionText = textEl.text()
+      captionHtml = modified.html() ?? ''
+    }
+  }
+
+  const title = captionText.match(TITLE_PREVIEW_REGEX)?.[0] ?? captionText ?? ''
+
+  // Build the unified media HTML
+  const groupContent = await extractMediaGroupContent($, item, { ...options, index })
+
+  const contentHtml = [
+    groupContent,
+    captionHtml ? `<div class="media-group__caption">${captionHtml}</div>` : '',
+  ]
+    .filter(isNonEmptyString)
+    .join('')
+    .replace(CONTENT_URL_REGEX, (_match, prefix: string, protocol: string) => {
+      const normalizedProtocol = protocol === '//' ? 'https://' : protocol
+      return `${prefix}${staticProxy}${normalizedProtocol}`
+    })
+
+  const reactions = reactionsEnabled ? getReactions($, lastMessage, staticProxy) : []
+
+  return {
+    id,
+    title,
+    type: 'text',
+    datetime,
+    tags,
+    text: captionText,
+    content: contentHtml,
+    reactions,
   }
 }
 
@@ -656,10 +915,12 @@ export async function getChannelInfo(context: RequestContext, params: GetChannel
   const { $, channel, staticProxy, reactionsEnabled } = await loadChannelDocument(context, { before, after, q })
   const postNodes = $('.tgme_channel_history .tgme_widget_message_wrap').toArray()
   const posts = (await Promise.all(
-    postNodes.map((item, index) => extractPost($, item, { channel, staticProxy, index, reactionsEnabled })),
+    postNodes.map((item: AnyNode, index: number) => extractPost($, item, { channel, staticProxy, index, reactionsEnabled })),
   ))
     .reverse()
-    .filter(post => post.type === 'text' && Boolean(post.id) && Boolean(post.content))
+    // Keep posts that have an id and either have content or are media groups (content may be
+    // empty for caption-less media, but we still render them as a media grid)
+    .filter((post: Post) => post.type === 'text' && Boolean(post.id) && Boolean(post.content))
 
   const channelInfo: ChannelInfo = {
     posts,
