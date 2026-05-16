@@ -580,7 +580,6 @@ return
         const ar = w / h
         if (ar >= 2 || ar <= 0.58) button.dataset.mediaShape = ar >= 2 ? 'wide' : 'tall'
         if (Math.min(w, h) <= 360) button.dataset.mediaShape = 'small'
-        button.style.setProperty('--media-ar', `${ar}`)
         button.dataset.loaded = 'true'
       }
 
