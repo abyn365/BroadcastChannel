@@ -182,10 +182,6 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
     // glassmorphic controls, auto-advance carousel
     // ─────────────────────────────────────────────
 
-    // Spring easing for CSS custom animations
-    const SPRING = 'cubic-bezier(0.34, 1.56, 0.64, 1)'
-    const EASE_SMOOTH = 'cubic-bezier(0.22, 1, 0.36, 1)'
-
     function setupMediaVideo(video) {
       if (!(video instanceof HTMLVideoElement) || video.dataset.enhanced === 'true') return
 
@@ -197,53 +193,83 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       const wrap = video.closest('.media-video-wrap')
       if (!(wrap instanceof HTMLElement)) return
 
-      // Inject glassmorphic control overlay
       injectVideoControls(video, wrap)
+
+      let hideTimer = null
 
       const showControls = () => {
         wrap.dataset.interacted = 'true'
-        video.controls = false // always use custom controls
+        clearTimeout(hideTimer)
       }
 
-      const hideControls = () => {
-        if (!video.paused || document.fullscreenElement === wrap) return
-        wrap.removeAttribute('data-interacted')
+      const scheduleHide = (delay) => {
+        clearTimeout(hideTimer)
+        hideTimer = setTimeout(() => {
+          if (!video.paused) wrap.removeAttribute('data-interacted')
+        }, delay || 2400)
       }
 
-      wrap.addEventListener('mouseenter', showControls)
-      wrap.addEventListener('mouseleave', () => setTimeout(hideControls, 1200))
-      wrap.addEventListener('focusin', showControls)
-      wrap.addEventListener('focusout', () => setTimeout(hideControls, 120))
+      const cancelHide = () => clearTimeout(hideTimer)
 
-      // Tap to toggle play/pause + show controls
-      wrap.addEventListener('pointerdown', (e) => {
-        const rect = wrap.getBoundingClientRect()
-        const safeSeekZoneTop = rect.bottom - Math.min(72, rect.height * 0.26)
-        if (e.clientY < safeSeekZoneTop && e.pointerType === 'touch') {
-          // tap area — toggle play
+      // Mouse: show on enter, schedule hide on leave (only while playing)
+      wrap.addEventListener('mouseenter', () => { showControls(); cancelHide() })
+      wrap.addEventListener('mouseleave', () => { if (!video.paused) scheduleHide(1800) })
+
+      // Mouse move inside wrap resets the hide timer
+      wrap.addEventListener('mousemove', () => {
+        if (wrap.dataset.interacted === 'true' && !video.paused) {
+          cancelHide()
+          scheduleHide(2400)
         }
-        showControls()
       })
 
-      video.addEventListener('play', showControls)
-      video.addEventListener('pause', () => setTimeout(hideControls, 900))
+      // Touch: tap shows controls, auto-hides after delay
+      wrap.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch') {
+          showControls()
+          if (!video.paused) scheduleHide(3000)
+        }
+      })
+
+      wrap.addEventListener('focusin', () => { showControls(); cancelHide() })
+      wrap.addEventListener('focusout', () => { if (!video.paused) scheduleHide(800) })
+
+      // Tap on video body toggles play (not on controls)
+      wrap.addEventListener('click', (e) => {
+        const ctrl = wrap.querySelector('.glass-controls')
+        if (ctrl && (e.target === ctrl || ctrl.contains(e.target))) return
+        if (video.paused) { video.play() } else { video.pause() }
+        wrap.dataset.interacted = 'true'
+      })
+
+      // When playing starts: show controls briefly then auto-hide
+      video.addEventListener('play', () => { showControls(); scheduleHide(2200) })
+
+      // When paused: show controls indefinitely
+      video.addEventListener('pause', () => { showControls(); cancelHide() })
+
+      // When ended: show controls, auto-advance carousel
       video.addEventListener('ended', () => {
-        wrap.removeAttribute('data-interacted')
-        // Auto-advance in carousel
+        showControls()
+        cancelHide()
         const group = wrap.closest('.media-group')
         if (group instanceof HTMLElement) {
           autoAdvanceCarousel(group, wrap)
         }
       })
 
+      // Fullscreen: always show controls
       document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement === wrap) { showControls(); return }
-        hideControls()
+        if (document.fullscreenElement === wrap) {
+          showControls()
+          cancelHide()
+        } else {
+          scheduleHide(1200)
+        }
       })
     }
 
     function injectVideoControls(video, wrap) {
-      // Don't double-inject
       if (wrap.querySelector('.glass-controls')) return
 
       const ctrl = document.createElement('div')
@@ -291,24 +317,13 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       ctrl.appendChild(rightBtns)
       wrap.appendChild(ctrl)
 
-      // — Play/pause toggle
+      // Play/pause toggle (button)
       playBtn.addEventListener('click', (e) => {
         e.stopPropagation()
-        if (video.paused) {
-          video.play()
-        } else {
-          video.pause()
-        }
-      })
-
-      // Also tap on video itself toggles play (not on controls)
-      wrap.addEventListener('click', (e) => {
-        if (e.target === ctrl || ctrl.contains(e.target)) return
         if (video.paused) { video.play() } else { video.pause() }
-        wrap.dataset.interacted = 'true'
       })
 
-      // — Sync play/pause icon
+      // Sync play/pause icon
       const syncPlayIcon = () => {
         const playIcon = playBtn.querySelector('.play-icon')
         const pauseIcon = playBtn.querySelector('.pause-icon')
@@ -322,13 +337,14 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       video.addEventListener('pause', syncPlayIcon)
       syncPlayIcon()
 
-      // — Progress bar
+      // Progress bar update
       video.addEventListener('timeupdate', () => {
         if (!video.duration) return
         const pct = (video.currentTime / video.duration) * 100
         progressFill.style.width = `${pct}%`
       })
 
+      // Progress bar scrub
       progressTrack.addEventListener('click', (e) => {
         e.stopPropagation()
         const rect = progressTrack.getBoundingClientRect()
@@ -336,7 +352,7 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
         video.currentTime = pct * video.duration
       })
 
-      // — Mute toggle
+      // Mute toggle
       muteBtn.addEventListener('click', (e) => {
         e.stopPropagation()
         video.muted = !video.muted
@@ -348,7 +364,7 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
         }
       })
 
-      // — Fullscreen
+      // Fullscreen
       fsBtn.addEventListener('click', (e) => {
         e.stopPropagation()
         if (document.fullscreenElement) {
@@ -369,9 +385,7 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       const nextItem = items[currentIdx + 1]
       if (!nextItem) return
 
-      // Brief pause then smooth scroll
       setTimeout(() => {
-        // Don't auto-advance if user recently interacted
         if (group.dataset.userInteracted === 'true') return
 
         const itemWidth = nextItem.offsetWidth
@@ -380,7 +394,6 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
         group.scrollTo({ left: targetScrollLeft, behavior: 'smooth' })
 
-        // Optionally autoplay next video
         setTimeout(() => {
           const nextVideo = nextItem.querySelector('video')
           if (nextVideo instanceof HTMLVideoElement) {
@@ -395,10 +408,7 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
       group.dataset.swipeReady = 'true'
 
-      // Inject dot indicator nav
       injectCarouselDots(group)
-
-      const coarsePointer = window.matchMedia('(pointer: coarse)').matches
 
       let startX = 0
       let startY = 0
@@ -409,7 +419,6 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       let dragging = false
       let horizontalSwipe = false
 
-      // Track user interaction to pause auto-advance
       const markUserInteraction = () => {
         group.dataset.userInteracted = 'true'
         clearTimeout(group._interactionTimeout)
@@ -461,7 +470,6 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
         if (horizontalSwipe) {
           event.preventDefault()
-          // Rubber band at edges
           let newLeft = startScrollLeft - dx
           const maxScroll = group.scrollWidth - group.clientWidth
           if (newLeft < 0) newLeft = newLeft * 0.3
@@ -492,7 +500,6 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
       group.addEventListener('pointercancel', clearSwipeState)
 
-      // Update dots on scroll end
       let scrollEndTimer
       group.addEventListener('scroll', () => {
         clearTimeout(scrollEndTimer)
@@ -514,7 +521,6 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
         dotsWrap.appendChild(dot)
       })
 
-      // Insert after group (inside same parent container)
       group.insertAdjacentElement('afterend', dotsWrap)
       group._dotsEl = dotsWrap
     }
@@ -533,8 +539,69 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
       })
     }
 
-    // Init all media
+    // ─────────────────────────────────────────────
+    // GALLERY CARD PARALLAX
+    // Desktop only — subtle 3D tilt on mouse move
+    // ─────────────────────────────────────────────
+
+    function setupGalleryParallax(container) {
+      if (!(container instanceof HTMLElement)) return
+      if (window.matchMedia('(pointer: coarse)').matches) return
+
+      const cards = Array.from(container.querySelectorAll('.image-preview-button'))
+      if (!cards.length) return
+
+      // Read the base tilt angle from the card's computed transform (fallback to alternating)
+      const baseTilts = cards.map((card, i) => {
+        const style = window.getComputedStyle(card)
+        const matrix = style.transform
+        if (matrix && matrix !== 'none') {
+          const match = matrix.match(/matrix\(([^,]+),([^,]+)/)
+          if (match) {
+            const a = parseFloat(match[1])
+            const b = parseFloat(match[2])
+            return Math.atan2(b, a) * (180 / Math.PI)
+          }
+        }
+        return i % 2 === 0 ? 0.5 : -0.6
+      })
+
+      let rafId = null
+
+      container.addEventListener('mousemove', (e) => {
+        const rect = container.getBoundingClientRect()
+        const mx = (e.clientX - rect.left - rect.width  / 2) / rect.width
+        const my = (e.clientY - rect.top  - rect.height / 2) / rect.height
+
+        if (!rafId) {
+          rafId = requestAnimationFrame(() => {
+            cards.forEach((card, i) => {
+              if (card.matches(':hover')) return
+              const dir = i % 2 === 0 ? 1 : -1
+              const base = baseTilts[i]
+              const tiltX = my * dir * 1.8
+              const tiltY = mx * dir * -1.8
+              const floatY = my * dir * 2
+              card.style.transform = `rotate(${base}deg) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(${floatY}px)`
+            })
+            rafId = null
+          })
+        }
+      })
+
+      container.addEventListener('mouseleave', () => {
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null }
+        // Clear inline transform — CSS nth-child rules take back over
+        cards.forEach((card) => { card.style.transform = '' })
+      })
+    }
+
+    // ─────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────
+
     document.querySelectorAll('.content .media-video-wrap video').forEach(setupMediaVideo)
     document.querySelectorAll('.content .media-group').forEach(setupSwipeableMediaGroup)
+    document.querySelectorAll('.content .image-list-container').forEach(setupGalleryParallax)
   })()
 </script>

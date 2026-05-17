@@ -1227,3 +1227,633 @@
     color: #c0b8b0;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   BROADCASTCHANNEL — GALLERY & MEDIA REDESIGN
+   Drop this into src/styles/content.css (or import it after app.css)
+   ─────────────────────────────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────
+   DESIGN TOKENS — gallery-specific
+   ───────────────────────────────────────────── */
+:root {
+  /* Card tilt angles — randomized per nth-child */
+  --tilt-1:  0.6deg;
+  --tilt-2: -0.8deg;
+  --tilt-3:  0.4deg;
+  --tilt-4: -0.5deg;
+  --tilt-5:  0.9deg;
+  --tilt-6: -0.3deg;
+  --tilt-7:  0.7deg;
+  --tilt-8: -0.6deg;
+  --tilt-9:  0.3deg;
+
+  /* Card depth shadows */
+  --shadow-card-gallery:
+    0 1px 1px rgba(0,0,0,0.04),
+    0 2px 4px rgba(0,0,0,0.06),
+    0 6px 14px rgba(0,0,0,0.08),
+    0 14px 28px rgba(0,0,0,0.06);
+  --shadow-card-gallery-hover:
+    0 2px 4px rgba(0,0,0,0.06),
+    0 6px 16px rgba(0,0,0,0.1),
+    0 18px 40px rgba(0,0,0,0.12),
+    0 32px 56px rgba(0,0,0,0.08);
+  --shadow-card-gallery-dark:
+    0 1px 2px rgba(0,0,0,0.25),
+    0 4px 8px rgba(0,0,0,0.35),
+    0 12px 28px rgba(0,0,0,0.4),
+    0 24px 48px rgba(0,0,0,0.3);
+  --shadow-card-gallery-dark-hover:
+    0 4px 8px rgba(0,0,0,0.4),
+    0 12px 28px rgba(0,0,0,0.55),
+    0 28px 56px rgba(0,0,0,0.5);
+}
+
+/* ─────────────────────────────────────────────
+   IMAGE GALLERY — floating card grid
+   ───────────────────────────────────────────── */
+.content .image-list-container {
+  /* Masonry-style with floating card feel */
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 4px 6px 8px;          /* room for tilt + shadow overflow */
+  margin: 1rem 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;              /* let rotated cards breathe */
+}
+
+/* Each photo button becomes a floating card */
+.content .image-preview-button {
+  position: relative;
+  border-radius: 12px !important;
+  overflow: hidden;
+  cursor: zoom-in;
+
+  /* Card surface */
+  background: var(--surface-0, #fff);
+  border: 1px solid rgba(255,255,255,0.85);
+  padding: 4px;                   /* inset frame */
+  box-shadow: var(--shadow-card-gallery);
+
+  /* Default tilt */
+  transform: rotate(var(--tilt-1)) translateY(0px);
+  transform-origin: center 85%;  /* rotate around lower center for natural feel */
+
+  transition:
+    transform  0.38s cubic-bezier(0.34, 1.48, 0.64, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    filter     0.25s ease;
+
+  will-change: transform;
+}
+
+html[data-theme='dark'] .content .image-preview-button {
+  background: rgba(28,30,34,0.92);
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: var(--shadow-card-gallery-dark);
+}
+
+/* Assign unique tilts per position — organic, not uniform */
+.content .image-preview-button:nth-child(1) { --tilt: var(--tilt-1); }
+.content .image-preview-button:nth-child(2) { --tilt: var(--tilt-2); }
+.content .image-preview-button:nth-child(3) { --tilt: var(--tilt-3); }
+.content .image-preview-button:nth-child(4) { --tilt: var(--tilt-4); }
+.content .image-preview-button:nth-child(5) { --tilt: var(--tilt-5); }
+.content .image-preview-button:nth-child(6) { --tilt: var(--tilt-6); }
+.content .image-preview-button:nth-child(7) { --tilt: var(--tilt-7); }
+.content .image-preview-button:nth-child(8) { --tilt: var(--tilt-8); }
+.content .image-preview-button:nth-child(9) { --tilt: var(--tilt-9); }
+
+/* Apply tilt with micro float offset */
+.content .image-preview-button:nth-child(odd)  { transform: rotate(var(--tilt, var(--tilt-1))) translateY(-1px); }
+.content .image-preview-button:nth-child(even) { transform: rotate(var(--tilt, var(--tilt-2))) translateY(1px); }
+
+/* Hover: straighten, lift, sharpen shadow */
+.content .image-preview-button:hover {
+  transform: rotate(0deg) translateY(-6px) scale(1.02);
+  box-shadow: var(--shadow-card-gallery-hover);
+  z-index: 10;
+  filter: brightness(1.03) contrast(1.01);
+}
+
+html[data-theme='dark'] .content .image-preview-button:hover {
+  box-shadow: var(--shadow-card-gallery-dark-hover);
+}
+
+/* Active/press: spring down */
+.content .image-preview-button:active {
+  transform: rotate(0deg) translateY(-2px) scale(0.99);
+  transition-duration: 0.12s;
+}
+
+/* The actual image inside the card */
+.content .image-preview-button img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 9px;             /* inner radius = outer 12 - padding 4 - 1 fudge */
+  border: none !important;
+  box-shadow: none !important;
+  transition:
+    opacity  0.25s ease,
+    transform 0.38s cubic-bezier(0.34, 1.48, 0.64, 1);
+  min-height: 90px;
+  background: var(--color-code);
+  margin: 0;
+}
+
+/* Subtle zoom on image when card lifts */
+.content .image-preview-button:hover img {
+  transform: scale(1.025);
+  opacity: 0.98;
+}
+
+/* Single image: full width, portrait-cap, no tilt */
+.content .image-list-container:has(.image-preview-button:only-child) {
+  grid-template-columns: 1fr;
+  padding: 4px;
+}
+
+.content .image-list-container:has(.image-preview-button:only-child) .image-preview-button {
+  transform: none;
+  padding: 5px;
+}
+
+.content .image-list-container:has(.image-preview-button:only-child) .image-preview-button:hover {
+  transform: translateY(-4px) scale(1.01);
+}
+
+.content .image-list-container:has(.image-preview-button:only-child) img {
+  max-height: 520px;
+  object-fit: contain;
+  background: rgba(0,0,0,0.04);
+}
+
+html[data-theme='dark'] .content .image-list-container:has(.image-preview-button:only-child) img {
+  background: rgba(255,255,255,0.03);
+}
+
+/* Odd-count: first card spans full width, no tilt */
+.content .image-list-container.image-list-odd .image-preview-button:first-child {
+  grid-column: 1 / 3;
+  transform: rotate(0.2deg) translateY(0px);  /* much subtler tilt when spanning */
+  padding: 5px;
+}
+
+.content .image-list-container.image-list-odd .image-preview-button:first-child:hover {
+  transform: rotate(0deg) translateY(-5px) scale(1.01);
+}
+
+.content .image-list-container.image-list-odd .image-preview-button:first-child img {
+  max-height: 340px;
+}
+
+/* Three or fewer images: give more visual breathing room */
+.content .image-list-container:has(.image-preview-button:nth-child(-n+3):last-child) {
+  gap: 12px;
+}
+
+/* ── Stagger entrance animations ──────────────────────────── */
+@keyframes card-float-in {
+  from {
+    opacity: 0;
+    transform: rotate(var(--tilt, 0deg)) translateY(18px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(var(--tilt, 0deg)) translateY(0px) scale(1);
+  }
+}
+
+.content .image-preview-button {
+  animation: card-float-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.content .image-preview-button:nth-child(1) { animation-delay: 0ms; }
+.content .image-preview-button:nth-child(2) { animation-delay: 55ms; }
+.content .image-preview-button:nth-child(3) { animation-delay: 100ms; }
+.content .image-preview-button:nth-child(4) { animation-delay: 145ms; }
+.content .image-preview-button:nth-child(5) { animation-delay: 185ms; }
+.content .image-preview-button:nth-child(n+6) { animation-delay: 220ms; }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .content .image-preview-button,
+  .content .image-preview-button img {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  .content .image-preview-button:hover {
+    transform: none !important;
+    filter: brightness(1.04) !important;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   MEDIA GROUP (video carousels / albums)
+   ───────────────────────────────────────────── */
+
+/* Desktop: refined grid with depth */
+@media (min-width: 600px) {
+  .content .media-group {
+    gap: 8px;
+    padding: 4px;
+    border-radius: 16px;
+    background: rgba(0,0,0,0.04);
+    border: 1px solid var(--color-line);
+    box-shadow:
+      0 2px 6px rgba(0,0,0,0.06),
+      0 8px 24px rgba(0,0,0,0.07),
+      inset 0 1px 0 rgba(255,255,255,0.6);
+    overflow: hidden;
+  }
+
+  html[data-theme='dark'] .content .media-group {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.07);
+    box-shadow:
+      0 2px 6px rgba(0,0,0,0.3),
+      0 8px 24px rgba(0,0,0,0.4),
+      inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+
+  .content .media-group__item {
+    border-radius: 10px;
+    overflow: hidden;
+    transition:
+      transform 0.35s cubic-bezier(0.34, 1.48, 0.64, 1),
+      box-shadow 0.3s ease;
+  }
+
+  .content .media-group__item:hover {
+    transform: scale(1.008) translateY(-2px);
+    z-index: 2;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   VIDEO PLAYER — auto-hiding glass controls
+   ───────────────────────────────────────────── */
+
+/* PHASE 1: reset the old always-visible approach */
+.content .media-video-wrap .glass-controls {
+  /* Inherit original opacity:0 / transform state from base CSS */
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition:
+    opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Show controls on hover / interaction / focus */
+.content .media-video-wrap:hover .glass-controls,
+.content .media-video-wrap:focus-within .glass-controls,
+.content .media-video-wrap[data-interacted='true'] .glass-controls {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* PHASE 2: refined glass control bar */
+.content .glass-controls {
+  padding: 12px 14px 14px;
+  gap: 10px;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.72) 0%,
+    rgba(0,0,0,0.42) 55%,
+    rgba(0,0,0,0) 100%
+  );
+  backdrop-filter: blur(0px);    /* no extra blur on controls; gradient is enough */
+}
+
+/* Glass buttons — refined iOS feel */
+.content .glass-btn {
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-bottom-color: rgba(255,255,255,0.1);
+  box-shadow:
+    0 1px 4px rgba(0,0,0,0.25),
+    0 3px 8px rgba(0,0,0,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    inset 0 -1px 0 rgba(0,0,0,0.1);
+  color: rgba(255,255,255,0.95);
+  transition:
+    background  0.16s ease,
+    transform   0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow  0.2s ease,
+    border-color 0.16s ease;
+}
+
+.content .glass-btn:hover {
+  background: rgba(255,255,255,0.26);
+  border-color: rgba(255,255,255,0.38);
+  box-shadow:
+    0 2px 6px rgba(0,0,0,0.3),
+    0 6px 16px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+  transform: scale(1.1) translateY(-1px);
+}
+
+.content .glass-btn:active {
+  transform: scale(0.93);
+  background: rgba(255,255,255,0.35);
+  transition-duration: 0.1s;
+}
+
+/* Play button: slightly larger, accent glow on hover */
+.content .glass-play-btn {
+  width: 40px;
+  height: 40px;
+}
+
+.content .glass-play-btn:hover {
+  background: rgba(255,255,255,0.22);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.3),
+    0 4px 12px rgba(0,0,0,0.35),
+    0 12px 24px rgba(0,0,0,0.2);
+}
+
+/* Progress track — refined */
+.content .glass-progress-track {
+  height: 3px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 99px;
+  transition: height 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.content .glass-progress-wrap:hover .glass-progress-track {
+  height: 5px;
+}
+
+.content .glass-progress-fill {
+  background: linear-gradient(90deg, rgba(255,255,255,0.75), rgba(255,255,255,0.95));
+  box-shadow: 0 0 8px rgba(255,255,255,0.35);
+}
+
+.content .glass-progress-thumb {
+  box-shadow:
+    0 1px 4px rgba(0,0,0,0.4),
+    0 0 0 2px rgba(255,255,255,0.5);
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.content .glass-progress-wrap:hover .glass-progress-thumb {
+  transform: translateY(-50%) scale(1);
+}
+
+/* Mute & fullscreen: smaller, pill-adjacent */
+.content .glass-mute-btn,
+.content .glass-fs-btn {
+  width: 32px;
+  height: 32px;
+}
+
+/* ── Video wrap: cinematic gradient fade ────── */
+.content .media-video-wrap::before {
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.78) 0%,
+    rgba(0,0,0,0.22) 38%,
+    rgba(0,0,0,0) 60%
+  );
+  transition: opacity 0.35s ease;
+}
+
+/* Auto-hide: gradient fades out when controls hidden */
+.content .media-video-wrap:not([data-interacted='true']):not(:hover):not(:focus-within)::before {
+  opacity: 0;
+}
+
+/* When paused with controls visible: slightly more gradient */
+.content .media-video-wrap[data-interacted='true']::before,
+.content .media-video-wrap:hover::before {
+  opacity: 1;
+}
+
+/* Standalone video: refined card */
+.content > .media-video-wrap,
+.content .media-video-wrap:not(.media-group__item .media-video-wrap) {
+  border-radius: 14px;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.08),
+    0 6px 20px rgba(0,0,0,0.1),
+    0 0 0 1px rgba(0,0,0,0.06);
+  transition:
+    box-shadow 0.3s ease,
+    transform  0.35s cubic-bezier(0.34, 1.48, 0.64, 1);
+}
+
+.content > .media-video-wrap:hover,
+.content .media-video-wrap:not(.media-group__item .media-video-wrap):hover {
+  box-shadow:
+    0 4px 8px rgba(0,0,0,0.1),
+    0 14px 40px rgba(0,0,0,0.15),
+    0 0 0 1px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+html[data-theme='dark'] .content > .media-video-wrap,
+html[data-theme='dark'] .content .media-video-wrap:not(.media-group__item .media-video-wrap) {
+  box-shadow:
+    0 2px 6px rgba(0,0,0,0.35),
+    0 8px 24px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.06);
+}
+
+/* ─────────────────────────────────────────────
+   MODAL — cinematic lightbox
+   ───────────────────────────────────────────── */
+
+/* Backdrop fade-in */
+.content .modal:popover-open {
+  animation: modal-backdrop-in 0.28s ease both;
+}
+
+@keyframes modal-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Image spring-scale in */
+.content .modal__surface {
+  animation: modal-surface-spring 0.4s cubic-bezier(0.34, 1.52, 0.64, 1) both;
+}
+
+@keyframes modal-surface-spring {
+  from {
+    transform: scale(0.84) translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Image inside modal: soft white border */
+.content .modal-img {
+  border: 1.5px solid rgba(255,255,255,0.1);
+  box-shadow:
+    0 8px 40px rgba(0,0,0,0.55),
+    0 32px 80px rgba(0,0,0,0.45),
+    0 0 0 1px rgba(255,255,255,0.04);
+}
+
+/* Close button: refined glass pill */
+.content .modal__close {
+  width: 38px;
+  height: 38px;
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  background: rgba(18,18,20,0.8);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.12);
+  transition:
+    background 0.15s ease,
+    transform  0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease;
+}
+
+.content .modal__close:hover {
+  background: rgba(44,44,48,0.92);
+  transform: scale(1.12) rotate(8deg);
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+}
+
+.content .modal__close:active {
+  transform: scale(0.94) rotate(0deg);
+}
+
+/* ─────────────────────────────────────────────
+   CAROUSEL DOTS — refined pill indicators
+   ───────────────────────────────────────────── */
+.content .carousel-dots {
+  gap: 6px;
+  padding: 10px 0 4px;
+}
+
+.content .carousel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--color-line);
+  border: 1px solid rgba(0,0,0,0.08);
+  opacity: 0.45;
+  transition:
+    width    0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity  0.25s ease,
+    background 0.25s ease;
+}
+
+.content .carousel-dot--active {
+  width: 18px;
+  background: var(--color-accent);
+  border-color: transparent;
+  opacity: 1;
+}
+
+/* ─────────────────────────────────────────────
+   MOBILE OVERRIDES
+   ───────────────────────────────────────────── */
+@media (max-width: 599px) {
+  /* Gallery grid: slightly larger gap on mobile */
+  .content .image-list-container {
+    gap: 8px;
+    padding: 3px 4px 6px;
+  }
+
+  /* Subtler tilts on small screens */
+  :root {
+    --tilt-1:  0.4deg;
+    --tilt-2: -0.5deg;
+    --tilt-3:  0.3deg;
+    --tilt-4: -0.4deg;
+    --tilt-5:  0.5deg;
+    --tilt-6: -0.3deg;
+    --tilt-7:  0.4deg;
+    --tilt-8: -0.3deg;
+    --tilt-9:  0.3deg;
+  }
+
+  /* Cards still float in on mobile, just slightly less dramatic */
+  .content .image-preview-button:hover {
+    transform: rotate(0deg) translateY(-3px) scale(1.01) !important;
+  }
+
+  /* Video controls: bigger touch targets */
+  .content .glass-btn {
+    width: 42px;
+    height: 42px;
+  }
+  .content .glass-play-btn {
+    width: 46px;
+    height: 46px;
+  }
+  .content .glass-mute-btn,
+  .content .glass-fs-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Controls always slightly visible on mobile (no hover) */
+  .content .media-video-wrap[data-interacted='true'] .glass-controls {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  /* Cap card inset frame on mobile */
+  .content .image-preview-button {
+    padding: 3px;
+  }
+
+  .content .image-preview-button img {
+    border-radius: 8px;
+  }
+
+  /* Carousel: mobile horizontal scroll */
+  .content .media-group {
+    gap: 10px;
+    padding: 4px 0 12px;
+  }
+
+  .content .media-group__item {
+    min-width: min(86vw, 420px);
+    border-radius: 12px;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   LINK PREVIEW — enhanced hover lift
+   ───────────────────────────────────────────── */
+.content .tgme_widget_message_link_preview--image:hover,
+.content .tgme_widget_message_link_preview--has-image:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-gallery);
+}
+
+/* ─────────────────────────────────────────────
+   FOCUS RING — accessibility, styled
+   ───────────────────────────────────────────── */
+.content .image-preview-button:focus-visible {
+  outline: 2.5px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 14px;
+  transform: rotate(0deg) translateY(-3px) !important;
+}
