@@ -281,7 +281,7 @@ function getImages($: CheerioAPI, message: MessageSelection, options: MessageAss
         popovertargetaction="show"
         aria-label="${safePreviewLabel}"
       >
-        <img src="${staticProxy + imageUrl}" alt="${safeTitle}" width="${width}" height="${height}" loading="${loading}" />
+        <img src="${staticProxy + imageUrl}" alt="${safeTitle}" loading="${loading}" />
       </button>
       <div class="modal" id="${popoverId}" popover aria-label="Image preview">
         <button
@@ -299,7 +299,7 @@ function getImages($: CheerioAPI, message: MessageSelection, options: MessageAss
           aria-label="${safeCloseLabel}"
         >&times;</button>
         <div class="modal__surface">
-          <img class="modal-img" src="${staticProxy + imageUrl}" alt="${safeTitle}" width="${width}" height="${height}" loading="lazy" />
+          <img class="modal-img" src="${staticProxy + imageUrl}" alt="${safeTitle}" loading="lazy" />
         </div>
       </div>
     `)
@@ -604,13 +604,13 @@ async function extractMediaGroupContent(
           popovertargetaction="show"
           aria-label="${safeLabel}"
         >
-          <img src="${staticProxy + imageUrl}" alt="${safeTitle}" width="${width}" height="${height}" loading="${loading}" />
+          <img src="${staticProxy + imageUrl}" alt="${safeTitle}" loading="${loading}" />
         </button>
         <div class="modal" id="${popoverId}" popover aria-label="Image preview">
           <button type="button" class="modal__backdrop" popovertarget="${popoverId}" popovertargetaction="hide" aria-label="${safeClose}"></button>
           <button type="button" class="modal__close" popovertarget="${popoverId}" popovertargetaction="hide" aria-label="${safeClose}">&times;</button>
           <div class="modal__surface">
-            <img class="modal-img" src="${staticProxy + imageUrl}" alt="${safeTitle}" width="${width}" height="${height}" loading="lazy" />
+            <img class="modal-img" src="${staticProxy + imageUrl}" alt="${safeTitle}" loading="lazy" />
           </div>
         </div>
       `)
