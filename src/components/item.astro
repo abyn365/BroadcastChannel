@@ -126,449 +126,755 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 </article>
 
 <script is:inline>
-  ;(() => {
-    const widgetSrc = 'https://telegram.org/js/telegram-widget.js?23'
+  // ─────────────────────────────────────────────────────────────────────────────
+// BROADCASTCHANNEL — item.astro <script is:inline> replacement
+// Includes: video player, desktop carousel, audio player, carousel dots
+// ─────────────────────────────────────────────────────────────────────────────
+;(() => {
+  const widgetSrc = 'https://telegram.org/js/telegram-widget.js?23'
 
-    function currentTheme() {
-      return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
+  function currentTheme() {
+    return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
+  }
+
+  function renderWidget(target, limit) {
+    const discussion = target.dataset.discussion
+    if (!discussion) return
+    const script = document.createElement('script')
+    script.async = true
+    script.src = widgetSrc
+    script.setAttribute('data-telegram-discussion', discussion)
+    script.setAttribute('data-comments-limit', limit)
+    script.setAttribute('data-colorful', '1')
+    if (currentTheme() === 'dark') script.setAttribute('data-dark', '1')
+    target.replaceChildren(script)
+  }
+
+  document.querySelectorAll('details[data-comments]').forEach((details) => {
+    const target = details.querySelector('[data-telegram-comments]')
+    if (!(target instanceof HTMLElement)) return
+    const meta = details.querySelector('[data-comments-meta]')
+    const previewLimit = target.dataset.previewLimit || '3'
+    const fullLimit = target.dataset.fullLimit || '50'
+    renderWidget(target, previewLimit)
+    details.addEventListener('toggle', () => {
+      const nextLimit = details.open ? fullLimit : previewLimit
+      renderWidget(target, nextLimit)
+      if (meta instanceof HTMLElement) {
+        meta.textContent = details.open ? 'Discussion expanded' : 'Latest replies preview'
+      }
+    })
+  })
+
+  window.addEventListener('themechange', () => {
+    document.querySelectorAll('details[data-comments] [data-telegram-comments]').forEach((target) => {
+      if (target instanceof HTMLElement) {
+        const details = target.closest('details[data-comments]')
+        const previewLimit = target.dataset.previewLimit || '3'
+        const fullLimit = target.dataset.fullLimit || '50'
+        renderWidget(target, details?.open ? fullLimit : previewLimit)
+      }
+    })
+  })
+
+  // ─────────────────────────────────────────────
+  // VIDEO PLAYER
+  // ─────────────────────────────────────────────
+
+  function setupMediaVideo(video) {
+    if (!(video instanceof HTMLVideoElement) || video.dataset.enhanced === 'true') return
+
+    video.dataset.enhanced = 'true'
+    video.controls = false
+    video.preload = 'metadata'
+    video.playsInline = true
+
+    const wrap = video.closest('.media-video-wrap')
+    if (!(wrap instanceof HTMLElement)) return
+
+    injectPlayOverlay(video, wrap)
+    injectVideoControls(video, wrap)
+
+    let hideTimer = null
+
+    const showControls = () => {
+      wrap.dataset.interacted = 'true'
+      clearTimeout(hideTimer)
     }
 
-    function renderWidget(target, limit) {
-      const discussion = target.dataset.discussion
-      if (!discussion) return
-      const script = document.createElement('script')
-      script.async = true
-      script.src = widgetSrc
-      script.setAttribute('data-telegram-discussion', discussion)
-      script.setAttribute('data-comments-limit', limit)
-      script.setAttribute('data-colorful', '1')
-      if (currentTheme() === 'dark') script.setAttribute('data-dark', '1')
-      target.replaceChildren(script)
+    const scheduleHide = (delay) => {
+      clearTimeout(hideTimer)
+      hideTimer = setTimeout(() => {
+        if (!video.paused) wrap.removeAttribute('data-interacted')
+      }, delay || 2400)
     }
 
-    document.querySelectorAll('details[data-comments]').forEach((details) => {
-      const target = details.querySelector('[data-telegram-comments]')
-      if (!(target instanceof HTMLElement)) return
-      const meta = details.querySelector('[data-comments-meta]')
-      const previewLimit = target.dataset.previewLimit || '3'
-      const fullLimit = target.dataset.fullLimit || '50'
-      renderWidget(target, previewLimit)
-      details.addEventListener('toggle', () => {
-        const nextLimit = details.open ? fullLimit : previewLimit
-        renderWidget(target, nextLimit)
-        if (meta instanceof HTMLElement) {
-          meta.textContent = details.open ? 'Discussion expanded' : 'Latest replies preview'
-        }
-      })
+    const cancelHide = () => clearTimeout(hideTimer)
+
+    wrap.addEventListener('mouseenter', () => { showControls(); cancelHide() })
+    wrap.addEventListener('mouseleave', () => { if (!video.paused) scheduleHide(1800) })
+
+    wrap.addEventListener('mousemove', () => {
+      if (wrap.dataset.interacted === 'true' && !video.paused) {
+        cancelHide()
+        scheduleHide(2400)
+      }
     })
 
-    window.addEventListener('themechange', () => {
-      document.querySelectorAll('details[data-comments] [data-telegram-comments]').forEach((target) => {
-        if (target instanceof HTMLElement) {
-          const details = target.closest('details[data-comments]')
-          const previewLimit = target.dataset.previewLimit || '3'
-          const fullLimit = target.dataset.fullLimit || '50'
-          renderWidget(target, details?.open ? fullLimit : previewLimit)
-        }
-      })
+    wrap.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'touch') {
+        showControls()
+        if (!video.paused) scheduleHide(3000)
+      }
     })
 
-    // ─────────────────────────────────────────────
-    // VIDEO PLAYER
-    // ─────────────────────────────────────────────
+    wrap.addEventListener('focusin',  () => { showControls(); cancelHide() })
+    wrap.addEventListener('focusout', () => { if (!video.paused) scheduleHide(800) })
 
-    function setupMediaVideo(video) {
-      if (!(video instanceof HTMLVideoElement) || video.dataset.enhanced === 'true') return
+    wrap.addEventListener('click', (e) => {
+      const ctrl = wrap.querySelector('.glass-controls')
+      const overlay = wrap.querySelector('.video-play-overlay')
+      if (ctrl && (e.target === ctrl || ctrl.contains(e.target))) return
+      if (video.paused) { video.play() } else { video.pause() }
+      wrap.dataset.interacted = 'true'
+    })
 
-      video.dataset.enhanced = 'true'
-      video.controls = false
-      video.preload = 'metadata'
-      video.playsInline = true
-
-      const wrap = video.closest('.media-video-wrap')
-      if (!(wrap instanceof HTMLElement)) return
-
-      // Inject centered play overlay (shown on initial load)
-      injectPlayOverlay(video, wrap)
-
-      // Inject glass controls bar (hidden by default)
-      injectVideoControls(video, wrap)
-
-      let hideTimer = null
-
-      const showControls = () => {
-        wrap.dataset.interacted = 'true'
-        clearTimeout(hideTimer)
+    video.addEventListener('play', () => {
+      wrap.dataset.playing = 'true'
+      showControls()
+      scheduleHide(2200)
+      // Pause sibling videos in the same carousel
+      const group = wrap.closest('.media-group')
+      if (group instanceof HTMLElement) {
+        group.querySelectorAll('video').forEach(v => {
+          if (v !== video && !v.paused) v.pause()
+        })
       }
+    })
 
-      const scheduleHide = (delay) => {
-        clearTimeout(hideTimer)
-        hideTimer = setTimeout(() => {
-          if (!video.paused) wrap.removeAttribute('data-interacted')
-        }, delay || 2400)
+    video.addEventListener('pause', () => {
+      wrap.removeAttribute('data-playing')
+      showControls()
+      cancelHide()
+    })
+
+    video.addEventListener('ended', () => {
+      wrap.removeAttribute('data-playing')
+      showControls()
+      cancelHide()
+      const group = wrap.closest('.media-group')
+      if (group instanceof HTMLElement) autoAdvanceCarousel(group, wrap)
+    })
+
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement === wrap) { showControls(); cancelHide() }
+      else scheduleHide(1200)
+    })
+  }
+
+  function injectPlayOverlay(video, wrap) {
+    if (wrap.querySelector('.video-play-overlay')) return
+
+    const overlay = document.createElement('div')
+    overlay.className = 'video-play-overlay'
+    overlay.setAttribute('aria-hidden', 'true')
+
+    const btn = document.createElement('div')
+    btn.className = 'video-play-overlay-btn'
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="margin-left:3px"><path d="M8 5v14l11-7z"/></svg>`
+
+    overlay.appendChild(btn)
+    wrap.appendChild(overlay)
+  }
+
+  function injectVideoControls(video, wrap) {
+    if (wrap.querySelector('.glass-controls')) return
+
+    const ctrl = document.createElement('div')
+    ctrl.className = 'glass-controls'
+    ctrl.setAttribute('aria-label', 'Video controls')
+
+    const playBtn = document.createElement('button')
+    playBtn.className = 'glass-btn glass-play-btn'
+    playBtn.setAttribute('aria-label', 'Play/Pause')
+    playBtn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path class="play-icon" d="M8 5v14l11-7z"/><path class="pause-icon" style="display:none" d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>`
+
+    const progressWrap = document.createElement('div')
+    progressWrap.className = 'glass-progress-wrap'
+    const progressTrack = document.createElement('div')
+    progressTrack.className = 'glass-progress-track'
+    const progressFill = document.createElement('div')
+    progressFill.className = 'glass-progress-fill'
+    const progressThumb = document.createElement('div')
+    progressThumb.className = 'glass-progress-thumb'
+    progressFill.appendChild(progressThumb)
+    progressTrack.appendChild(progressFill)
+    progressWrap.appendChild(progressTrack)
+
+    const muteBtn = document.createElement('button')
+    muteBtn.className = 'glass-btn glass-mute-btn'
+    muteBtn.setAttribute('aria-label', 'Mute/Unmute')
+    muteBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path class="unmuted-icon" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/><path class="muted-icon" style="display:none" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`
+
+    const fsBtn = document.createElement('button')
+    fsBtn.className = 'glass-btn glass-fs-btn'
+    fsBtn.setAttribute('aria-label', 'Fullscreen')
+    fsBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>`
+
+    const rightBtns = document.createElement('div')
+    rightBtns.className = 'glass-right-btns'
+    rightBtns.appendChild(muteBtn)
+    rightBtns.appendChild(fsBtn)
+
+    ctrl.appendChild(playBtn)
+    ctrl.appendChild(progressWrap)
+    ctrl.appendChild(rightBtns)
+    wrap.appendChild(ctrl)
+
+    playBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      if (video.paused) { video.play() } else { video.pause() }
+    })
+
+    const syncPlayIcon = () => {
+      const playIcon = playBtn.querySelector('.play-icon')
+      const pauseIcon = playBtn.querySelector('.pause-icon')
+      if (playIcon && pauseIcon) {
+        playIcon.style.display = video.paused ? '' : 'none'
+        pauseIcon.style.display = video.paused ? 'none' : ''
       }
-
-      const cancelHide = () => clearTimeout(hideTimer)
-
-      wrap.addEventListener('mouseenter', () => { showControls(); cancelHide() })
-      wrap.addEventListener('mouseleave', () => { if (!video.paused) scheduleHide(1800) })
-
-      wrap.addEventListener('mousemove', () => {
-        if (wrap.dataset.interacted === 'true' && !video.paused) {
-          cancelHide()
-          scheduleHide(2400)
-        }
-      })
-
-      wrap.addEventListener('pointerdown', (e) => {
-        if (e.pointerType === 'touch') {
-          showControls()
-          if (!video.paused) scheduleHide(3000)
-        }
-      })
-
-      wrap.addEventListener('focusin',  () => { showControls(); cancelHide() })
-      wrap.addEventListener('focusout', () => { if (!video.paused) scheduleHide(800) })
-
-      // Tap on video body toggles play
-      wrap.addEventListener('click', (e) => {
-        const ctrl = wrap.querySelector('.glass-controls')
-        const overlay = wrap.querySelector('.video-play-overlay')
-        if (ctrl && (e.target === ctrl || ctrl.contains(e.target))) return
-        if (video.paused) { video.play() } else { video.pause() }
-        wrap.dataset.interacted = 'true'
-      })
-
-      video.addEventListener('play', () => {
-        wrap.dataset.playing = 'true'
-        showControls()
-        scheduleHide(2200)
-      })
-
-      video.addEventListener('pause', () => {
-        wrap.removeAttribute('data-playing')
-        showControls()
-        cancelHide()
-      })
-
-      video.addEventListener('ended', () => {
-        wrap.removeAttribute('data-playing')
-        showControls()
-        cancelHide()
-        const group = wrap.closest('.media-group')
-        if (group instanceof HTMLElement) autoAdvanceCarousel(group, wrap)
-      })
-
-      document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement === wrap) { showControls(); cancelHide() }
-        else scheduleHide(1200)
-      })
+      playBtn.setAttribute('aria-label', video.paused ? 'Play' : 'Pause')
     }
+    video.addEventListener('play', syncPlayIcon)
+    video.addEventListener('pause', syncPlayIcon)
+    syncPlayIcon()
 
-    function injectPlayOverlay(video, wrap) {
-      if (wrap.querySelector('.video-play-overlay')) return
+    video.addEventListener('timeupdate', () => {
+      if (!video.duration) return
+      progressFill.style.width = `${(video.currentTime / video.duration) * 100}%`
+    })
 
-      const overlay = document.createElement('div')
-      overlay.className = 'video-play-overlay'
-      overlay.setAttribute('aria-hidden', 'true')
+    progressTrack.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const rect = progressTrack.getBoundingClientRect()
+      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+      video.currentTime = pct * video.duration
+    })
 
-      const btn = document.createElement('div')
-      btn.className = 'video-play-overlay-btn'
-      btn.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="margin-left:3px"><path d="M8 5v14l11-7z"/></svg>`
-
-      overlay.appendChild(btn)
-      wrap.appendChild(overlay)
-    }
-
-    function injectVideoControls(video, wrap) {
-      if (wrap.querySelector('.glass-controls')) return
-
-      const ctrl = document.createElement('div')
-      ctrl.className = 'glass-controls'
-      ctrl.setAttribute('aria-label', 'Video controls')
-
-      // Play/pause
-      const playBtn = document.createElement('button')
-      playBtn.className = 'glass-btn glass-play-btn'
-      playBtn.setAttribute('aria-label', 'Play/Pause')
-      playBtn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path class="play-icon" d="M8 5v14l11-7z"/><path class="pause-icon" style="display:none" d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>`
-
-      // Progress
-      const progressWrap = document.createElement('div')
-      progressWrap.className = 'glass-progress-wrap'
-      const progressTrack = document.createElement('div')
-      progressTrack.className = 'glass-progress-track'
-      const progressFill = document.createElement('div')
-      progressFill.className = 'glass-progress-fill'
-      const progressThumb = document.createElement('div')
-      progressThumb.className = 'glass-progress-thumb'
-      progressFill.appendChild(progressThumb)
-      progressTrack.appendChild(progressFill)
-      progressWrap.appendChild(progressTrack)
-
-      // Mute
-      const muteBtn = document.createElement('button')
-      muteBtn.className = 'glass-btn glass-mute-btn'
-      muteBtn.setAttribute('aria-label', 'Mute/Unmute')
-      muteBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path class="unmuted-icon" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/><path class="muted-icon" style="display:none" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>`
-
-      // Fullscreen
-      const fsBtn = document.createElement('button')
-      fsBtn.className = 'glass-btn glass-fs-btn'
-      fsBtn.setAttribute('aria-label', 'Fullscreen')
-      fsBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>`
-
-      const rightBtns = document.createElement('div')
-      rightBtns.className = 'glass-right-btns'
-      rightBtns.appendChild(muteBtn)
-      rightBtns.appendChild(fsBtn)
-
-      ctrl.appendChild(playBtn)
-      ctrl.appendChild(progressWrap)
-      ctrl.appendChild(rightBtns)
-      wrap.appendChild(ctrl)
-
-      // Play/pause toggle
-      playBtn.addEventListener('click', (e) => {
-        e.stopPropagation()
-        if (video.paused) { video.play() } else { video.pause() }
-      })
-
-      // Sync icon
-      const syncPlayIcon = () => {
-        const playIcon = playBtn.querySelector('.play-icon')
-        const pauseIcon = playBtn.querySelector('.pause-icon')
-        if (playIcon && pauseIcon) {
-          playIcon.style.display = video.paused ? '' : 'none'
-          pauseIcon.style.display = video.paused ? 'none' : ''
-        }
-        playBtn.setAttribute('aria-label', video.paused ? 'Play' : 'Pause')
+    muteBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      video.muted = !video.muted
+      const unmuted = muteBtn.querySelector('.unmuted-icon')
+      const muted = muteBtn.querySelector('.muted-icon')
+      if (unmuted && muted) {
+        unmuted.style.display = video.muted ? 'none' : ''
+        muted.style.display = video.muted ? '' : 'none'
       }
-      video.addEventListener('play', syncPlayIcon)
-      video.addEventListener('pause', syncPlayIcon)
-      syncPlayIcon()
+    })
 
-      // Progress update
-      video.addEventListener('timeupdate', () => {
-        if (!video.duration) return
-        progressFill.style.width = `${(video.currentTime / video.duration) * 100}%`
-      })
+    fsBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      if (document.fullscreenElement) { document.exitFullscreen() }
+      else { wrap.requestFullscreen?.() }
+    })
 
-      // Scrub
-      progressTrack.addEventListener('click', (e) => {
-        e.stopPropagation()
-        const rect = progressTrack.getBoundingClientRect()
-        const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
-        video.currentTime = pct * video.duration
-      })
+    // Fullscreen: ensure controls & safe area respected
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement === wrap) {
+        ctrl.style.paddingBottom = `max(14px, env(safe-area-inset-bottom, 14px))`
+        ctrl.style.paddingLeft = `max(14px, env(safe-area-inset-left, 14px))`
+        ctrl.style.paddingRight = `max(14px, env(safe-area-inset-right, 14px))`
+      } else {
+        ctrl.style.paddingBottom = ''
+        ctrl.style.paddingLeft = ''
+        ctrl.style.paddingRight = ''
+      }
+    })
+  }
 
-      // Mute
-      muteBtn.addEventListener('click', (e) => {
-        e.stopPropagation()
-        video.muted = !video.muted
-        const unmuted = muteBtn.querySelector('.unmuted-icon')
-        const muted = muteBtn.querySelector('.muted-icon')
-        if (unmuted && muted) {
-          unmuted.style.display = video.muted ? 'none' : ''
-          muted.style.display = video.muted ? '' : 'none'
-        }
-      })
+  // ─────────────────────────────────────────────
+  // CAROUSEL — auto-advance
+  // ─────────────────────────────────────────────
 
-      // Fullscreen
-      fsBtn.addEventListener('click', (e) => {
-        e.stopPropagation()
-        if (document.fullscreenElement) { document.exitFullscreen() }
-        else { wrap.requestFullscreen?.() }
-      })
-    }
-
-    // ─────────────────────────────────────────────
-    // CAROUSEL
-    // ─────────────────────────────────────────────
-
-    function autoAdvanceCarousel(group, currentWrap) {
-      const items = Array.from(group.querySelectorAll('.media-group__item'))
-      const currentItem = currentWrap.closest('.media-group__item')
-      const currentIdx = items.indexOf(currentItem)
-      if (currentIdx < 0 || currentIdx >= items.length - 1) return
-      const nextItem = items[currentIdx + 1]
-      if (!nextItem) return
+  function autoAdvanceCarousel(group, currentWrap) {
+    const items = Array.from(group.querySelectorAll('.media-group__item'))
+    const currentItem = currentWrap.closest('.media-group__item')
+    const currentIdx = items.indexOf(currentItem)
+    if (currentIdx < 0 || currentIdx >= items.length - 1) return
+    const nextItem = items[currentIdx + 1]
+    if (!nextItem) return
+    setTimeout(() => {
+      if (group.dataset.userInteracted === 'true') return
+      const itemWidth = nextItem.offsetWidth
+      group.scrollTo({ left: (currentIdx + 1) * (itemWidth + 10), behavior: 'smooth' })
       setTimeout(() => {
-        if (group.dataset.userInteracted === 'true') return
-        const itemWidth = nextItem.offsetWidth
-        group.scrollTo({ left: (currentIdx + 1) * (itemWidth + 10), behavior: 'smooth' })
-        setTimeout(() => {
-          const nextVideo = nextItem.querySelector('video')
-          if (nextVideo instanceof HTMLVideoElement) nextVideo.play().catch(() => {})
-        }, 400)
-      }, 600)
+        const nextVideo = nextItem.querySelector('video')
+        if (nextVideo instanceof HTMLVideoElement) nextVideo.play().catch(() => {})
+      }, 400)
+    }, 600)
+  }
+
+  // ─────────────────────────────────────────────
+  // MOBILE SWIPE CAROUSEL
+  // ─────────────────────────────────────────────
+
+  function setupSwipeableMediaGroup(group) {
+    if (!(group instanceof HTMLElement) || group.dataset.swipeReady === 'true') return
+    if (!window.matchMedia('(pointer: coarse)').matches) return
+    group.dataset.swipeReady = 'true'
+
+    injectCarouselDots(group)
+
+    let startX = 0, startY = 0, lastX = 0, startTime = 0
+    let pointerId = -1, startScrollLeft = 0
+    let dragging = false, horizontalSwipe = false
+
+    const markUserInteraction = () => {
+      group.dataset.userInteracted = 'true'
+      clearTimeout(group._interactionTimeout)
+      group._interactionTimeout = setTimeout(() => { delete group.dataset.userInteracted }, 8000)
     }
 
-    function setupSwipeableMediaGroup(group) {
-      if (!(group instanceof HTMLElement) || group.dataset.swipeReady === 'true') return
-      if (!window.matchMedia('(pointer: coarse)').matches) return
-      group.dataset.swipeReady = 'true'
-
-      // Only inject dots on touch/mobile (CSS hides them on desktop anyway)
-      injectCarouselDots(group)
-
-      let startX = 0, startY = 0, lastX = 0, startTime = 0
-      let pointerId = -1, startScrollLeft = 0
-      let dragging = false, horizontalSwipe = false
-
-      const markUserInteraction = () => {
-        group.dataset.userInteracted = 'true'
-        clearTimeout(group._interactionTimeout)
-        group._interactionTimeout = setTimeout(() => { delete group.dataset.userInteracted }, 8000)
-      }
-
-      const clearSwipeState = () => {
-        group.removeAttribute('data-swiping')
-        dragging = false; horizontalSwipe = false; pointerId = -1
-      }
-
-      group.addEventListener('pointerdown', (event) => {
-        if (event.pointerType !== 'touch' && event.pointerType !== 'mouse') return
-        startX = event.clientX; startY = event.clientY; lastX = startX
-        startTime = Date.now(); startScrollLeft = group.scrollLeft
-        pointerId = event.pointerId; dragging = true; horizontalSwipe = false
-        group.setPointerCapture(pointerId)
-        markUserInteraction()
-      })
-
-      group.addEventListener('pointermove', (event) => {
-        if (!dragging || pointerId !== event.pointerId) return
-        const dx = event.clientX - startX
-        const dy = event.clientY - startY
-        if (!horizontalSwipe) {
-          if (Math.abs(dx) >= 10 && Math.abs(dx) > Math.abs(dy) * 1.1) {
-            horizontalSwipe = true
-            group.dataset.swiping = 'true'
-            group.querySelectorAll('.media-video-wrap video').forEach((v) => {
-              if (v instanceof HTMLVideoElement) v.controls = false
-            })
-          }
-          if (!horizontalSwipe && Math.abs(dy) >= 12 && Math.abs(dy) > Math.abs(dx)) {
-            clearSwipeState(); return
-          }
-        }
-        if (horizontalSwipe) {
-          event.preventDefault()
-          let newLeft = startScrollLeft - dx
-          const maxScroll = group.scrollWidth - group.clientWidth
-          if (newLeft < 0) newLeft = newLeft * 0.3
-          if (newLeft > maxScroll) newLeft = maxScroll + (newLeft - maxScroll) * 0.3
-          group.scrollLeft = newLeft
-          lastX = event.clientX
-        }
-      })
-
-      group.addEventListener('pointerup', (event) => {
-        if (pointerId !== event.pointerId) return
-        if (horizontalSwipe) {
-          const elapsed = Math.max(1, Date.now() - startTime)
-          const travel = lastX - startX
-          const velocity = travel / elapsed
-          const item = group.querySelector('.media-group__item')
-          const width = item instanceof HTMLElement ? item.offsetWidth + 10 : group.clientWidth * 0.9
-          const momentum = velocity * 160
-          const projected = startScrollLeft - (travel + momentum)
-          const target = Math.round(projected / width) * width
-          group.scrollTo({ left: Math.max(0, target), behavior: 'smooth' })
-          updateCarouselDots(group)
-        }
-        clearSwipeState()
-      })
-
-      group.addEventListener('pointercancel', clearSwipeState)
-
-      let scrollEndTimer
-      group.addEventListener('scroll', () => {
-        clearTimeout(scrollEndTimer)
-        scrollEndTimer = setTimeout(() => updateCarouselDots(group), 80)
-      }, { passive: true })
+    const clearSwipeState = () => {
+      group.removeAttribute('data-swiping')
+      dragging = false; horizontalSwipe = false; pointerId = -1
     }
 
-    function injectCarouselDots(group) {
-      const items = group.querySelectorAll('.media-group__item')
-      if (items.length < 2) return
-      const dotsWrap = document.createElement('div')
-      dotsWrap.className = 'carousel-dots'
-      dotsWrap.setAttribute('aria-hidden', 'true')
-      Array.from(items).forEach((_, i) => {
-        const dot = document.createElement('span')
-        dot.className = 'carousel-dot' + (i === 0 ? ' carousel-dot--active' : '')
-        dotsWrap.appendChild(dot)
-      })
-      group.insertAdjacentElement('afterend', dotsWrap)
-      group._dotsEl = dotsWrap
-    }
+    group.addEventListener('pointerdown', (event) => {
+      if (event.pointerType !== 'touch' && event.pointerType !== 'mouse') return
+      startX = event.clientX; startY = event.clientY; lastX = startX
+      startTime = Date.now(); startScrollLeft = group.scrollLeft
+      pointerId = event.pointerId; dragging = true; horizontalSwipe = false
+      group.setPointerCapture(pointerId)
+      markUserInteraction()
+    })
 
-    function updateCarouselDots(group) {
-      const dotsWrap = group._dotsEl
-      if (!dotsWrap) return
-      const items = Array.from(group.querySelectorAll('.media-group__item'))
-      if (!items.length) return
-      const itemWidth = items[0].offsetWidth + 10
-      const activeIdx = Math.round(group.scrollLeft / itemWidth)
-      dotsWrap.querySelectorAll('.carousel-dot').forEach((dot, i) => {
-        dot.classList.toggle('carousel-dot--active', i === activeIdx)
-      })
-    }
-
-    // ─────────────────────────────────────────────
-    // GALLERY CARD PARALLAX (desktop, mouse only)
-    // ─────────────────────────────────────────────
-
-    function setupGalleryParallax(container) {
-      if (!(container instanceof HTMLElement)) return
-      if (window.matchMedia('(pointer: coarse)').matches) return
-
-      const cards = Array.from(container.querySelectorAll('.image-preview-button'))
-      if (!cards.length) return
-
-      // Capture base tilt from computed style after CSS has applied nth-child transforms
-      const baseTilts = cards.map((card, i) => {
-        const matrix = window.getComputedStyle(card).transform
-        if (matrix && matrix !== 'none') {
-          const m = matrix.match(/matrix\(([^,]+),([^,]+)/)
-          if (m) return Math.atan2(parseFloat(m[2]), parseFloat(m[1])) * (180 / Math.PI)
-        }
-        return i % 2 === 0 ? 0.5 : -0.6
-      })
-
-      let rafId = null
-
-      container.addEventListener('mousemove', (e) => {
-        const rect = container.getBoundingClientRect()
-        const mx = (e.clientX - rect.left - rect.width  / 2) / rect.width
-        const my = (e.clientY - rect.top  - rect.height / 2) / rect.height
-        if (!rafId) {
-          rafId = requestAnimationFrame(() => {
-            cards.forEach((card, i) => {
-              if (card.matches(':hover')) return
-              const dir = i % 2 === 0 ? 1 : -1
-              const base = baseTilts[i]
-              card.style.transform =
-                `rotate(${base}deg) rotateX(${my * dir * 1.8}deg) rotateY(${mx * dir * -1.8}deg) translateY(${my * dir * 2}px)`
-            })
-            rafId = null
+    group.addEventListener('pointermove', (event) => {
+      if (!dragging || pointerId !== event.pointerId) return
+      const dx = event.clientX - startX
+      const dy = event.clientY - startY
+      if (!horizontalSwipe) {
+        if (Math.abs(dx) >= 10 && Math.abs(dx) > Math.abs(dy) * 1.1) {
+          horizontalSwipe = true
+          group.dataset.swiping = 'true'
+          group.querySelectorAll('.media-video-wrap video').forEach((v) => {
+            if (v instanceof HTMLVideoElement) v.controls = false
           })
         }
-      })
+        if (!horizontalSwipe && Math.abs(dy) >= 12 && Math.abs(dy) > Math.abs(dx)) {
+          clearSwipeState(); return
+        }
+      }
+      if (horizontalSwipe) {
+        event.preventDefault()
+        let newLeft = startScrollLeft - dx
+        const maxScroll = group.scrollWidth - group.clientWidth
+        if (newLeft < 0) newLeft = newLeft * 0.3
+        if (newLeft > maxScroll) newLeft = maxScroll + (newLeft - maxScroll) * 0.3
+        group.scrollLeft = newLeft
+        lastX = event.clientX
+      }
+    })
 
-      container.addEventListener('mouseleave', () => {
-        if (rafId) { cancelAnimationFrame(rafId); rafId = null }
-        cards.forEach((card) => { card.style.transform = '' })
+    group.addEventListener('pointerup', (event) => {
+      if (pointerId !== event.pointerId) return
+      if (horizontalSwipe) {
+        const elapsed = Math.max(1, Date.now() - startTime)
+        const travel = lastX - startX
+        const velocity = travel / elapsed
+        const item = group.querySelector('.media-group__item')
+        const width = item instanceof HTMLElement ? item.offsetWidth + 10 : group.clientWidth * 0.9
+        const momentum = velocity * 160
+        const projected = startScrollLeft - (travel + momentum)
+        const target = Math.round(projected / width) * width
+        group.scrollTo({ left: Math.max(0, target), behavior: 'smooth' })
+        updateCarouselDots(group)
+      }
+      clearSwipeState()
+    })
+
+    group.addEventListener('pointercancel', clearSwipeState)
+
+    let scrollEndTimer
+    group.addEventListener('scroll', () => {
+      clearTimeout(scrollEndTimer)
+      scrollEndTimer = setTimeout(() => updateCarouselDots(group), 80)
+    }, { passive: true })
+  }
+
+  // ─────────────────────────────────────────────
+  // DESKTOP VIDEO CAROUSEL
+  // ─────────────────────────────────────────────
+
+  function setupDesktopVideoCarousel(group) {
+    if (!(group instanceof HTMLElement)) return
+    if (group.dataset.desktopCarousel === 'true') return
+    if (window.matchMedia('(pointer: coarse)').matches) return  // mobile uses swipe
+
+    const items = Array.from(group.querySelectorAll('.media-group__item'))
+    if (items.length < 2) return
+
+    group.dataset.desktopCarousel = 'true'
+
+    // Inject desktop carousel chrome
+    const wrapper = document.createElement('div')
+    wrapper.className = 'desktop-carousel-wrapper'
+    group.parentNode.insertBefore(wrapper, group)
+    wrapper.appendChild(group)
+
+    // Arrow buttons
+    const prevBtn = createArrowBtn('prev')
+    const nextBtn = createArrowBtn('next')
+    wrapper.appendChild(prevBtn)
+    wrapper.appendChild(nextBtn)
+
+    // Dot indicators
+    const dotsWrap = document.createElement('div')
+    dotsWrap.className = 'carousel-dots desktop-carousel-dots'
+    dotsWrap.setAttribute('aria-hidden', 'true')
+    items.forEach((_, i) => {
+      const dot = document.createElement('span')
+      dot.className = 'carousel-dot' + (i === 0 ? ' carousel-dot--active' : '')
+      dotsWrap.appendChild(dot)
+    })
+    wrapper.appendChild(dotsWrap)
+
+    let currentIdx = 0
+    let isAnimating = false
+
+    // Scroll-snap based on item index
+    function scrollToItem(idx, animate = true) {
+      idx = Math.max(0, Math.min(items.length - 1, idx))
+      if (idx === currentIdx && animate) return
+
+      // Pause current video
+      const currentVideo = items[currentIdx].querySelector('video')
+      if (currentVideo && !currentVideo.paused) currentVideo.pause()
+
+      currentIdx = idx
+      isAnimating = true
+
+      const item = items[idx]
+      const itemLeft = item.offsetLeft
+      group.scrollTo({ left: itemLeft, behavior: animate ? 'smooth' : 'instant' })
+
+      updateArrows()
+      updateDesktopDots(dotsWrap, currentIdx)
+
+      setTimeout(() => { isAnimating = false }, 450)
+    }
+
+    function updateArrows() {
+      prevBtn.disabled = currentIdx === 0
+      nextBtn.disabled = currentIdx === items.length - 1
+      prevBtn.style.opacity = currentIdx === 0 ? '0.3' : '1'
+      nextBtn.style.opacity = currentIdx === items.length - 1 ? '0.3' : '1'
+    }
+
+    prevBtn.addEventListener('click', () => scrollToItem(currentIdx - 1))
+    nextBtn.addEventListener('click', () => scrollToItem(currentIdx + 1))
+
+    // Keyboard navigation
+    wrapper.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); scrollToItem(currentIdx - 1) }
+      if (e.key === 'ArrowRight') { e.preventDefault(); scrollToItem(currentIdx + 1) }
+    })
+
+    // Drag/swipe on desktop (mouse drag)
+    let dragStartX = 0, dragStartScroll = 0, isDragging = false, hasDragged = false
+
+    group.addEventListener('mousedown', (e) => {
+      dragStartX = e.clientX
+      dragStartScroll = group.scrollLeft
+      isDragging = true
+      hasDragged = false
+      group.style.cursor = 'grabbing'
+      group.style.userSelect = 'none'
+    })
+
+    group.addEventListener('mousemove', (e) => {
+      if (!isDragging) return
+      const dx = e.clientX - dragStartX
+      if (Math.abs(dx) > 5) hasDragged = true
+      group.scrollLeft = dragStartScroll - dx
+    })
+
+    const endDrag = (e) => {
+      if (!isDragging) return
+      isDragging = false
+      group.style.cursor = ''
+      group.style.userSelect = ''
+
+      if (hasDragged) {
+        // Snap to nearest item
+        const itemWidth = items[0].offsetWidth
+        const nearest = Math.round(group.scrollLeft / itemWidth)
+        scrollToItem(nearest)
+      }
+    }
+
+    group.addEventListener('mouseup', endDrag)
+    group.addEventListener('mouseleave', endDrag)
+
+    // Detect scroll position changes (from native scroll-snap or programmatic)
+    let scrollTimer
+    group.addEventListener('scroll', () => {
+      if (isAnimating) return
+      clearTimeout(scrollTimer)
+      scrollTimer = setTimeout(() => {
+        const itemWidth = items[0].offsetWidth
+        const nearest = Math.round(group.scrollLeft / itemWidth)
+        if (nearest !== currentIdx) {
+          currentIdx = nearest
+          updateArrows()
+          updateDesktopDots(dotsWrap, currentIdx)
+        }
+      }, 60)
+    }, { passive: true })
+
+    // Hover: show/hide arrows based on position
+    wrapper.addEventListener('mouseenter', () => {
+      prevBtn.style.visibility = 'visible'
+      nextBtn.style.visibility = 'visible'
+    })
+    wrapper.addEventListener('mouseleave', () => {
+      // Keep visible but at lower opacity when at ends
+    })
+
+    updateArrows()
+    scrollToItem(0, false)
+  }
+
+  function createArrowBtn(dir) {
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    btn.className = `carousel-arrow carousel-arrow--${dir}`
+    btn.setAttribute('aria-label', dir === 'prev' ? 'Previous' : 'Next')
+    btn.innerHTML = dir === 'prev'
+      ? `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`
+      : `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`
+    return btn
+  }
+
+  function updateDesktopDots(dotsWrap, activeIdx) {
+    dotsWrap.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+      dot.classList.toggle('carousel-dot--active', i === activeIdx)
+    })
+  }
+
+  // ─────────────────────────────────────────────
+  // CAROUSEL DOTS — mobile
+  // ─────────────────────────────────────────────
+
+  function injectCarouselDots(group) {
+    const items = group.querySelectorAll('.media-group__item')
+    if (items.length < 2) return
+    const dotsWrap = document.createElement('div')
+    dotsWrap.className = 'carousel-dots'
+    dotsWrap.setAttribute('aria-hidden', 'true')
+    Array.from(items).forEach((_, i) => {
+      const dot = document.createElement('span')
+      dot.className = 'carousel-dot' + (i === 0 ? ' carousel-dot--active' : '')
+      dotsWrap.appendChild(dot)
+    })
+    group.insertAdjacentElement('afterend', dotsWrap)
+    group._dotsEl = dotsWrap
+  }
+
+  function updateCarouselDots(group) {
+    const dotsWrap = group._dotsEl
+    if (!dotsWrap) return
+    const items = Array.from(group.querySelectorAll('.media-group__item'))
+    if (!items.length) return
+    const itemWidth = items[0].offsetWidth + 10
+    const activeIdx = Math.round(group.scrollLeft / itemWidth)
+    dotsWrap.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+      dot.classList.toggle('carousel-dot--active', i === activeIdx)
+    })
+  }
+
+  // ─────────────────────────────────────────────
+  // GALLERY CARD PARALLAX (desktop, mouse only)
+  // ─────────────────────────────────────────────
+
+  function setupGalleryParallax(container) {
+    if (!(container instanceof HTMLElement)) return
+    if (window.matchMedia('(pointer: coarse)').matches) return
+
+    const cards = Array.from(container.querySelectorAll('.image-preview-button'))
+    if (!cards.length) return
+
+    const baseTilts = cards.map((card, i) => {
+      const matrix = window.getComputedStyle(card).transform
+      if (matrix && matrix !== 'none') {
+        const m = matrix.match(/matrix\(([^,]+),([^,]+)/)
+        if (m) return Math.atan2(parseFloat(m[2]), parseFloat(m[1])) * (180 / Math.PI)
+      }
+      return i % 2 === 0 ? 0.5 : -0.6
+    })
+
+    let rafId = null
+
+    container.addEventListener('mousemove', (e) => {
+      const rect = container.getBoundingClientRect()
+      const mx = (e.clientX - rect.left - rect.width  / 2) / rect.width
+      const my = (e.clientY - rect.top  - rect.height / 2) / rect.height
+      if (!rafId) {
+        rafId = requestAnimationFrame(() => {
+          cards.forEach((card, i) => {
+            if (card.matches(':hover')) return
+            const dir = i % 2 === 0 ? 1 : -1
+            const base = baseTilts[i]
+            card.style.transform =
+              `rotate(${base}deg) rotateX(${my * dir * 1.8}deg) rotateY(${mx * dir * -1.8}deg) translateY(${my * dir * 2}px)`
+          })
+          rafId = null
+        })
+      }
+    })
+
+    container.addEventListener('mouseleave', () => {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null }
+      cards.forEach((card) => { card.style.transform = '' })
+    })
+  }
+
+  // ─────────────────────────────────────────────
+  // NATIVE AUDIO PLAYER
+  // ─────────────────────────────────────────────
+
+  function setupAudioPlayer(player) {
+    if (!(player instanceof HTMLElement) || player.dataset.audioReady === 'true') return
+    player.dataset.audioReady = 'true'
+
+    const audio = player.querySelector('.nap__audio')
+    if (!(audio instanceof HTMLAudioElement)) return
+
+    const playBtn   = player.querySelector('.nap__play-btn')
+    const playIcon  = player.querySelector('.icon-play')
+    const pauseIcon = player.querySelector('.icon-pause')
+    const progressTrack = player.querySelector('.nap__progress-track')
+    const progressFill  = player.querySelector('.nap__progress-fill')
+    const progressThumb = player.querySelector('.nap__progress-thumb')
+    const currentEl = player.querySelector('.nap__current')
+    const durationEl = player.querySelector('.nap__duration')
+    const bars = player.querySelectorAll('.nap__bar')
+
+    function fmt(secs) {
+      if (!isFinite(secs) || secs < 0) return '0:00'
+      const m = Math.floor(secs / 60)
+      const s = Math.floor(secs % 60)
+      return `${m}:${s.toString().padStart(2, '0')}`
+    }
+
+    function syncIcon() {
+      if (!playIcon || !pauseIcon) return
+      playIcon.style.display = audio.paused ? '' : 'none'
+      pauseIcon.style.display = audio.paused ? 'none' : ''
+    }
+
+    function updateProgress() {
+      const dur = audio.duration || 0
+      const pct = dur ? (audio.currentTime / dur) * 100 : 0
+      if (progressFill) progressFill.style.width = `${pct}%`
+      if (currentEl) currentEl.textContent = fmt(audio.currentTime)
+
+      // Animate waveform bars based on progress
+      if (bars.length) {
+        const activeBars = Math.round((pct / 100) * bars.length)
+        bars.forEach((bar, i) => {
+          bar.classList.toggle('nap__bar--played', i < activeBars)
+        })
+      }
+
+      if (progressTrack) {
+        progressTrack.setAttribute('aria-valuenow', String(Math.round(audio.currentTime)))
+      }
+    }
+
+    function seek(e) {
+      const rect = progressTrack.getBoundingClientRect()
+      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+      audio.currentTime = pct * (audio.duration || 0)
+    }
+
+    if (playBtn) {
+      playBtn.addEventListener('click', () => {
+        if (audio.paused) {
+          // Pause other audio players on page
+          document.querySelectorAll('.nap__audio').forEach(a => {
+            if (a !== audio && !a.paused) a.pause()
+          })
+          audio.play().catch(() => {})
+        } else {
+          audio.pause()
+        }
       })
     }
 
-    // ─────────────────────────────────────────────
-    // INIT
-    // ─────────────────────────────────────────────
+    audio.addEventListener('play', () => {
+      syncIcon()
+      player.dataset.playing = 'true'
+    })
+    audio.addEventListener('pause', () => {
+      syncIcon()
+      player.removeAttribute('data-playing')
+    })
+    audio.addEventListener('ended', () => {
+      syncIcon()
+      player.removeAttribute('data-playing')
+      if (progressFill) progressFill.style.width = '0%'
+      if (currentEl) currentEl.textContent = '0:00'
+      if (bars.length) bars.forEach(b => b.classList.remove('nap__bar--played'))
+    })
+    audio.addEventListener('timeupdate', updateProgress)
+    audio.addEventListener('loadedmetadata', () => {
+      if (durationEl && audio.duration) durationEl.textContent = fmt(audio.duration)
+    })
 
-    document.querySelectorAll('.content .media-video-wrap video').forEach(setupMediaVideo)
-    document.querySelectorAll('.content .media-group').forEach(setupSwipeableMediaGroup)
-    document.querySelectorAll('.content .image-list-container').forEach(setupGalleryParallax)
-  })()
+    // Scrub on click/drag
+    if (progressTrack) {
+      let scrubbing = false
+      progressTrack.addEventListener('mousedown', (e) => {
+        scrubbing = true
+        seek(e)
+      })
+      document.addEventListener('mousemove', (e) => {
+        if (scrubbing) seek(e)
+      })
+      document.addEventListener('mouseup', () => { scrubbing = false })
+
+      progressTrack.addEventListener('touchstart', (e) => {
+        seek(e.touches[0])
+      }, { passive: true })
+      progressTrack.addEventListener('touchmove', (e) => {
+        seek(e.touches[0])
+      }, { passive: true })
+
+      // Keyboard seek
+      progressTrack.addEventListener('keydown', (e) => {
+        const step = 5
+        if (e.key === 'ArrowRight') { audio.currentTime = Math.min(audio.duration, audio.currentTime + step) }
+        if (e.key === 'ArrowLeft')  { audio.currentTime = Math.max(0, audio.currentTime - step) }
+      })
+    }
+
+    syncIcon()
+  }
+
+  // ─────────────────────────────────────────────
+  // INIT
+  // ─────────────────────────────────────────────
+
+  document.querySelectorAll('.content .media-video-wrap video').forEach(setupMediaVideo)
+
+  // Setup carousels — desktop first, then mobile swipe
+  document.querySelectorAll('.content .media-group').forEach((group) => {
+    setupDesktopVideoCarousel(group)
+    setupSwipeableMediaGroup(group)
+  })
+
+  document.querySelectorAll('.content .image-list-container').forEach(setupGalleryParallax)
+  document.querySelectorAll('.content .native-audio-player').forEach(setupAudioPlayer)
+})()
 </script>
