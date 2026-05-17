@@ -1229,12 +1229,13 @@ html[data-theme='dark'] .content .image-preview-button:hover {
 
 /* ── SINGLE IMAGE — preserve natural composition ── */
 .content .image-list-container.image-list-single {
-  grid-template-columns: 1fr;
+  display: block;
   padding: 4px;
 }
 
 .content .image-list-container.image-list-single .image-preview-button {
   transform: none !important;
+  display: block;
   padding: 5px;
   width: 100%;
   border-radius: 14px !important;
@@ -1248,10 +1249,12 @@ html[data-theme='dark'] .content .image-preview-button:hover {
 .content .image-list-container.image-list-single .image-preview-button img {
   display: block;
   width: 100%;
-  height: auto;
+  max-width: 100%;
+  height: auto !important;
   min-height: 0;
   max-height: none;
-  object-fit: unset !important;
+  aspect-ratio: auto !important;
+  object-fit: initial !important;
   border-radius: 10px;
   background: transparent;
 }
