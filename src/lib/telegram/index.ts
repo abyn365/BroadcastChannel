@@ -310,7 +310,8 @@ function getImages($: CheerioAPI, message: MessageSelection, options: MessageAss
   }
 
   const layoutClass = fragments.length % 2 === 0 ? 'image-list-even' : 'image-list-odd'
-  return `<div class="image-list-container ${layoutClass}">${fragments.join('')}</div>`
+  const singleClass = fragments.length === 1 ? ' image-list-single' : ''
+  return `<div class="image-list-container ${layoutClass}${singleClass}">${fragments.join('')}</div>`
 }
 
 // Extract all videos from a message set, returning them individually wrapped for the gallery
@@ -664,7 +665,8 @@ async function extractMediaGroupContent(
   // Images grid
   if (imageFragments.length) {
     const layoutClass = imageFragments.length % 2 === 0 ? 'image-list-even' : 'image-list-odd'
-    allMedia.push(`<div class="image-list-container ${layoutClass}">${imageFragments.join('')}</div>`)
+    const singleClass = imageFragments.length === 1 ? ' image-list-single' : ''
+    allMedia.push(`<div class="image-list-container ${layoutClass}${singleClass}">${imageFragments.join('')}</div>`)
   }
 
   // Videos grid
