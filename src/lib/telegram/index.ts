@@ -390,8 +390,11 @@ function getAudio($: CheerioAPI, message: MessageSelection, options: StaticProxy
 
   // Telegram document/audio posts
   const docWrap = message.find('.tgme_widget_message_document_wrap')
-  const docAudio = docWrap.find('audio, [data-audio]')
-  const docSrc = docAudio.attr('src') || docAudio.attr('data-src')
+  const docAudio = docWrap.find('audio, [data-audio], source[type^="audio/"], audio source')
+  const docSrc
+    = docAudio.attr('src')
+      || docAudio.attr('data-src')
+      || docWrap.find('a[href$=\".mp3\" i], a[href$=\".m4a\" i], a[href*=\"/file/\"]').attr('href')
 
   // Determine source, duration, and metadata
   let src = ''
@@ -408,13 +411,14 @@ function getAudio($: CheerioAPI, message: MessageSelection, options: StaticProxy
     durationSecs = parseDuration(durationAttr)
   }
   else if (docSrc) {
-    src = staticProxy + docSrc
+    src = getMediaSrc(docSrc, staticProxy)
     // Try extract metadata from document wrap
     title = docWrap.find('.tgme_widget_message_document_title').text().trim()
     artist = docWrap.find('.tgme_widget_message_document_extra').text().trim()
     const thumbStyle = docWrap.find('.tgme_widget_message_document_icon, [class*="thumb"]').attr('style')
     const thumbUrl = thumbStyle?.match(STYLE_URL_REGEX)?.[2]
-    if (thumbUrl) coverUrl = staticProxy + thumbUrl
+    if (thumbUrl)
+      coverUrl = staticProxy + thumbUrl
     const durationText = docWrap.find('[class*="duration"]').text().trim()
     durationSecs = parseDuration(durationText)
   }
@@ -422,17 +426,20 @@ function getAudio($: CheerioAPI, message: MessageSelection, options: StaticProxy
     // Also check for .tgme_widget_message_audio (another Telegram audio class)
     const audioEl = message.find('.tgme_widget_message_audio')
     const audioSrc = audioEl.attr('src')
-    if (!audioSrc) return ''
+    if (!audioSrc)
+      return ''
     src = staticProxy + audioSrc
     title = message.find('.tgme_widget_message_audio_title').text().trim()
     artist = message.find('.tgme_widget_message_audio_performer').text().trim()
     const thumbUrl = message.find('.tgme_widget_message_audio_cover img').attr('src')
-    if (thumbUrl) coverUrl = staticProxy + thumbUrl
+    if (thumbUrl)
+      coverUrl = staticProxy + thumbUrl
     const durationText = message.find('[class*="duration"]').text().trim()
     durationSecs = parseDuration(durationText)
   }
 
-  if (!src) return ''
+  if (!src)
+    return ''
 
   const safeTitle = escapeHtmlAttribute(title || (isVoice ? 'Voice message' : 'Audio'))
   const safeArtist = escapeHtmlAttribute(artist)
@@ -441,15 +448,17 @@ function getAudio($: CheerioAPI, message: MessageSelection, options: StaticProxy
 
   return `
 <div class="${playerClass}" data-audio-src="${escapeHtmlAttribute(src)}" data-duration="${durationSecs}" role="region" aria-label="Audio player">
-  ${coverUrl ? `
+  ${coverUrl
+    ? `
   <div class="nap__cover-wrap">
     <img class="nap__cover" src="${escapeHtmlAttribute(coverUrl)}" alt="" loading="lazy" aria-hidden="true" />
     <div class="nap__cover-blur" style="background-image:url('${escapeHtmlAttribute(coverUrl)}')" aria-hidden="true"></div>
-  </div>` : `
+  </div>`
+    : `
   <div class="nap__icon-wrap" aria-hidden="true">
     <svg class="nap__icon" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">${isVoice
-      ? '<path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 15.2 14.47 17 12 17s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V21c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>'
-      : '<path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/>'
+        ? '<path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 15.2 14.47 17 12 17s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V21c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>'
+        : '<path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/>'
     }</svg>
   </div>`}
   <div class="nap__body">
@@ -481,15 +490,19 @@ function getAudio($: CheerioAPI, message: MessageSelection, options: StaticProxy
 }
 
 function parseDuration(text: string | undefined): number {
-  if (!text) return 0
+  if (!text)
+    return 0
   const parts = text.trim().split(':').map(Number)
-  if (parts.length === 2) return (parts[0] || 0) * 60 + (parts[1] || 0)
-  if (parts.length === 3) return (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0)
+  if (parts.length === 2)
+    return (parts[0] || 0) * 60 + (parts[1] || 0)
+  if (parts.length === 3)
+    return (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0)
   return Number(text) || 0
 }
 
 function formatDuration(secs: number): string {
-  if (!secs) return '0:00'
+  if (!secs)
+    return '0:00'
   const m = Math.floor(secs / 60)
   const s = Math.floor(secs % 60)
   return `${m}:${s.toString().padStart(2, '0')}`
@@ -498,9 +511,9 @@ function formatDuration(secs: number): string {
 function generateWaveform(): string {
   // Generate pseudo-random but deterministic waveform bars
   const bars = 32
-  const heights = [40,65,45,80,55,70,35,90,60,75,50,85,45,70,55,65,80,40,75,60,45,85,55,70,65,80,50,40,75,60,85,45]
+  const heights = [40, 65, 45, 80, 55, 70, 35, 90, 60, 75, 50, 85, 45, 70, 55, 65, 80, 40, 75, 60, 45, 85, 55, 70, 65, 80, 50, 40, 75, 60, 85, 45]
   return heights.slice(0, bars).map((h, i) =>
-    `<div class="nap__bar" style="height:${h}%" data-bar="${i}"></div>`
+    `<div class="nap__bar" style="height:${h}%" data-bar="${i}"></div>`,
   ).join('')
 }
 
@@ -673,8 +686,6 @@ async function extractMediaGroupContent(
   const videoFragments: string[] = []
   const audioFragments: string[] = []
   let captionHtml = ''
-  let captionId = ''
-  let lastCaptionText = ''
 
   for (const [msgIndex, msgNode] of messages.toArray().entries()) {
     const msg = $(msgNode)
@@ -682,7 +693,8 @@ async function extractMediaGroupContent(
 
     for (const [photoIndex, photoNode] of msg.find('.tgme_widget_message_photo_wrap').toArray().entries()) {
       const imageUrl = $(photoNode).attr('style')?.match(STYLE_URL_REGEX)?.[2]
-      if (!imageUrl) continue
+      if (!imageUrl)
+        continue
 
       const safeTitle = 'Image from post'
       const safeLabel = 'Open image preview'
@@ -737,18 +749,18 @@ async function extractMediaGroupContent(
     const audio = msg.find('.tgme_widget_message_voice')
     if (audio.length) {
       const audioSrc = audio.attr('src')
-      if (audioSrc) audio.attr('src', staticProxy + audioSrc)
+      if (audioSrc)
+        audio.attr('src', staticProxy + audioSrc)
       audio.attr('controls', '')
       const html = $.html(audio)
-      if (html) audioFragments.push(html)
+      if (html)
+        audioFragments.push(html)
     }
 
     const textSel = msg.find('.tgme_widget_message_text')
     if (textSel.length && textSel.text().trim()) {
       const modified = await modifyHTMLContent($, textSel, { index: index ?? msgIndex, staticProxy })
       captionHtml = modified.html() ?? ''
-      captionId = msgId
-      lastCaptionText = textSel.text()
     }
   }
 
@@ -891,7 +903,6 @@ async function extractMediaGroupPost($: CheerioAPI, item: AnyNode, options: Extr
     ?? ''
 
   let captionText = ''
-  let captionHtml = ''
   const tags: string[] = []
 
   for (const [msgIndex, msgNode] of messages.toArray().entries()) {
@@ -911,7 +922,6 @@ async function extractMediaGroupPost($: CheerioAPI, item: AnyNode, options: Extr
       }
 
       captionText = textEl.text()
-      captionHtml = modified.html() ?? ''
     }
   }
 
