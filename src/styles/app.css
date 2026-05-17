@@ -1236,6 +1236,7 @@ html[data-theme='dark'] .content .image-preview-button:hover {
 .content .image-list-container.image-list-single .image-preview-button {
   transform: none !important;
   padding: 5px;
+  width: 100%;
   border-radius: 14px !important;
 }
 
@@ -1245,18 +1246,16 @@ html[data-theme='dark'] .content .image-preview-button:hover {
 
 /* No forced crop — show image at its natural ratio */
 .content .image-list-container.image-list-single .image-preview-button img {
+  display: block;
   width: 100%;
   height: auto;
   min-height: 0;
   max-height: none;
-  object-fit: contain !important;
+  object-fit: unset !important;
   border-radius: 10px;
-  background: rgba(0,0,0,0.03);
+  background: transparent;
 }
 
-html[data-theme='dark'] .content .image-list-container.image-list-single .image-preview-button img {
-  background: rgba(255,255,255,0.025);
-}
 
 /* ── ODD GRID — spanning first card ── */
 .content .image-list-container.image-list-odd:not(.image-list-single) .image-preview-button:first-child {
