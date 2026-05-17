@@ -1228,23 +1228,23 @@ html[data-theme='dark'] .content .image-preview-button:hover {
 }
 
 /* ── SINGLE IMAGE — preserve natural composition ── */
-.content .image-list-container:has(.image-preview-button:only-child) {
+.content .image-list-container.image-list-single {
   grid-template-columns: 1fr;
   padding: 4px;
 }
 
-.content .image-list-container:has(.image-preview-button:only-child) .image-preview-button {
+.content .image-list-container.image-list-single .image-preview-button {
   transform: none !important;
   padding: 5px;
   border-radius: 14px !important;
 }
 
-.content .image-list-container:has(.image-preview-button:only-child) .image-preview-button:hover {
+.content .image-list-container.image-list-single .image-preview-button:hover {
   transform: translateY(-4px) scale(1.012) !important;
 }
 
 /* No forced crop — show image at its natural ratio */
-.content .image-list-container:has(.image-preview-button:only-child) img {
+.content .image-list-container.image-list-single img {
   width: 100%;
   height: auto;
   object-fit: contain;
@@ -1253,7 +1253,7 @@ html[data-theme='dark'] .content .image-preview-button:hover {
   background: rgba(0,0,0,0.03);
 }
 
-html[data-theme='dark'] .content .image-list-container:has(.image-preview-button:only-child) img {
+html[data-theme='dark'] .content .image-list-container.image-list-single img {
   background: rgba(255,255,255,0.025);
 }
 
@@ -1311,7 +1311,7 @@ html[data-theme='dark'] .content .image-list-container:has(.image-preview-button
   .content .image-preview-button:hover {
     transform: rotate(0deg) translateY(-3px) scale(1.01) !important;
   }
-  .content .image-list-container:has(.image-preview-button:only-child) img {
+  .content .image-list-container.image-list-single img {
     max-height: min(480px, 85vw);
   }
 }
