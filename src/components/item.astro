@@ -406,6 +406,7 @@ const getTagHref = (tag: string) => `/search/result?q=${encodeURIComponent(`#${t
 
     function setupSwipeableMediaGroup(group) {
       if (!(group instanceof HTMLElement) || group.dataset.swipeReady === 'true') return
+      if (!window.matchMedia('(pointer: coarse)').matches) return
       group.dataset.swipeReady = 'true'
 
       // Only inject dots on touch/mobile (CSS hides them on desktop anyway)
