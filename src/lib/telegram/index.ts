@@ -383,87 +383,136 @@ function getVideo($: CheerioAPI, message: MessageSelection, options: IndexedStat
 // ─────────────────────────────────────────────────────────────────────────────
 function getAudio($: CheerioAPI, message: MessageSelection, options: StaticProxyOptions): string {
   const { staticProxy = '' } = options
-
-  // Telegram voice messages
-  const voice = message.find('.tgme_widget_message_voice')
-  const voiceSrc = voice.attr('src')
-
-  // Telegram document/audio posts
-  const docWrap = message.find('.tgme_widget_message_document_wrap')
-  const docAudio = docWrap.find('audio, [data-audio]')
-  const docSrc = docAudio.attr('src') || docAudio.attr('data-src')
-
-  // Determine source, duration, and metadata
-  let src = ''
-  let durationSecs = 0
-  let title = ''
-  let artist = ''
-  let coverUrl = ''
-  let isVoice = false
-
+ 
+  // ── 1. Voice messages — <audio src="..."> IS in the scraped HTML ──────────
+  const voiceEl = message.find('.tgme_widget_message_voice')
+  const voiceSrc = voiceEl.attr('src')
+ 
   if (voiceSrc) {
-    src = staticProxy + voiceSrc
-    isVoice = true
-    const durationAttr = voice.attr('data-duration') || message.find('.tgme_widget_message_voice_duration').text()
-    durationSecs = parseDuration(durationAttr)
+    const src = staticProxy + voiceSrc
+    const durationText = message.find('.tgme_widget_message_voice_duration').text().trim()
+    const durationSecs = parseDuration(durationText)
+ 
+    return buildAudioPlayerHTML({
+      src,
+      isVoice: true,
+      durationSecs,
+    })
   }
-  else if (docSrc) {
-    src = staticProxy + docSrc
-    // Try extract metadata from document wrap
-    title = docWrap.find('.tgme_widget_message_document_title').text().trim()
-    artist = docWrap.find('.tgme_widget_message_document_extra').text().trim()
-    const thumbStyle = docWrap.find('.tgme_widget_message_document_icon, [class*="thumb"]').attr('style')
-    const thumbUrl = thumbStyle?.match(STYLE_URL_REGEX)?.[2]
-    if (thumbUrl) coverUrl = staticProxy + thumbUrl
-    const durationText = docWrap.find('[class*="duration"]').text().trim()
-    durationSecs = parseDuration(durationText)
+ 
+  // ── 2. Audio/music documents ───────────────────────────────────────────────
+  // Telegram wraps audio files in .tgme_widget_message_document.
+  // The actual audio src is NOT present statically — but there's a download
+  // link (.tgme_widget_message_document_extra or the anchor href on the icon).
+  // We use that link as the audio src (it's the same CDN file).
+  const docWrap = message.find('.tgme_widget_message_document_wrap')
+  if (docWrap.length) {
+    // Check if this document is audio/music (has duration field)
+    const durationText = docWrap.find('[class*="document_extra"], .document_extra, time').text().trim()
+    // The icon class often contains "audio" or "music" for audio files
+    const iconClass = docWrap.find('[class*="document_icon"]').attr('class') ?? ''
+    const isAudioDoc = durationText.match(/^\d+:\d+/) || iconClass.includes('audio') || iconClass.includes('music')
+ 
+    if (isAudioDoc) {
+      // Try to get a download URL from the anchor wrapping the document
+      const docLink = docWrap.find('a[href]').first().attr('href')
+        ?? message.find('a.tgme_widget_message_document').attr('href')
+        ?? ''
+ 
+      const src = docLink ? (docLink.startsWith('http') ? docLink : staticProxy + docLink) : ''
+      const title = docWrap.find('[class*="document_title"]').text().trim()
+      const artist = docWrap.find('[class*="document_extra"]').text().trim().replace(/^\d+:\d+\s*/, '')
+      const durationSecs = parseDuration(durationText)
+ 
+      // Cover art: look for background-image style on the icon
+      const iconStyle = docWrap.find('[class*="document_icon"]').attr('style') ?? ''
+      const coverMatch = iconStyle.match(STYLE_URL_REGEX)
+      const coverUrl = coverMatch ? staticProxy + coverMatch[2] : ''
+ 
+      if (src) {
+        return buildAudioPlayerHTML({ src, title, artist, coverUrl, durationSecs, isVoice: false })
+      }
+ 
+      // No src available — render a "no playback" card with metadata only
+      return buildAudioPlayerHTML({ src: '', title, artist, coverUrl, durationSecs, isVoice: false })
+    }
   }
-  else {
-    // Also check for .tgme_widget_message_audio (another Telegram audio class)
-    const audioEl = message.find('.tgme_widget_message_audio')
-    const audioSrc = audioEl.attr('src')
-    if (!audioSrc) return ''
-    src = staticProxy + audioSrc
-    title = message.find('.tgme_widget_message_audio_title').text().trim()
-    artist = message.find('.tgme_widget_message_audio_performer').text().trim()
-    const thumbUrl = message.find('.tgme_widget_message_audio_cover img').attr('src')
-    if (thumbUrl) coverUrl = staticProxy + thumbUrl
+ 
+  // ── 3. Explicit <audio> or data-src elements (fallback) ───────────────────
+  const audioEl = message.find('audio, [data-audio-src]')
+  const audioSrc = audioEl.attr('src') || audioEl.attr('data-src') || audioEl.attr('data-audio-src')
+  if (audioSrc) {
+    const src = staticProxy + audioSrc
+    const title = message.find('[class*="audio_title"]').text().trim()
+    const artist = message.find('[class*="audio_performer"]').text().trim()
     const durationText = message.find('[class*="duration"]').text().trim()
-    durationSecs = parseDuration(durationText)
+    const durationSecs = parseDuration(durationText)
+    const thumbUrl = message.find('[class*="audio_cover"] img').attr('src')
+    const coverUrl = thumbUrl ? staticProxy + thumbUrl : ''
+    return buildAudioPlayerHTML({ src, title, artist, coverUrl, durationSecs, isVoice: false })
   }
-
-  if (!src) return ''
-
+ 
+  return ''
+}
+ 
+// ─────────────────────────────────────────────────────────────────────────────
+// buildAudioPlayerHTML — shared renderer
+// ─────────────────────────────────────────────────────────────────────────────
+interface AudioPlayerOptions {
+  src: string
+  isVoice?: boolean
+  title?: string
+  artist?: string
+  coverUrl?: string
+  durationSecs?: number
+}
+ 
+function buildAudioPlayerHTML(opts: AudioPlayerOptions): string {
+  const { src, isVoice = false, title = '', artist = '', coverUrl = '', durationSecs = 0 } = opts
+ 
   const safeTitle = escapeHtmlAttribute(title || (isVoice ? 'Voice message' : 'Audio'))
   const safeArtist = escapeHtmlAttribute(artist)
+  const safeSrc = escapeHtmlAttribute(src)
+  const safeCover = escapeHtmlAttribute(coverUrl)
   const durationDisplay = formatDuration(durationSecs)
   const playerClass = isVoice ? 'native-audio-player native-audio-player--voice' : 'native-audio-player'
-
+ 
+  const coverBlock = coverUrl
+    ? `<div class="nap__cover-wrap">
+        <img class="nap__cover" src="${safeCover}" alt="" loading="lazy" aria-hidden="true" />
+        <div class="nap__cover-blur" style="background-image:url('${safeCover}')" aria-hidden="true"></div>
+      </div>`
+    : `<div class="nap__icon-wrap" aria-hidden="true">
+        <svg class="nap__icon" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">${
+          isVoice
+            ? '<path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 15.2 14.47 17 12 17s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V21c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>'
+            : '<path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/>'
+        }</svg>
+      </div>`
+ 
+  // If no src, show a "not playable" state but still render metadata
+  const audioEl = src
+    ? `<audio class="nap__audio" src="${safeSrc}" preload="metadata" aria-hidden="true"></audio>`
+    : `<!-- audio src unavailable: rendered from Telegram document metadata -->`
+ 
+  const playBtnDisabled = src ? '' : ' disabled aria-disabled="true" title="Audio not available for direct playback"'
+ 
   return `
-<div class="${playerClass}" data-audio-src="${escapeHtmlAttribute(src)}" data-duration="${durationSecs}" role="region" aria-label="Audio player">
-  ${coverUrl ? `
-  <div class="nap__cover-wrap">
-    <img class="nap__cover" src="${escapeHtmlAttribute(coverUrl)}" alt="" loading="lazy" aria-hidden="true" />
-    <div class="nap__cover-blur" style="background-image:url('${escapeHtmlAttribute(coverUrl)}')" aria-hidden="true"></div>
-  </div>` : `
-  <div class="nap__icon-wrap" aria-hidden="true">
-    <svg class="nap__icon" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">${isVoice
-      ? '<path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 15.2 14.47 17 12 17s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V21c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>'
-      : '<path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/>'
-    }</svg>
-  </div>`}
+<div class="${playerClass}" role="region" aria-label="${isVoice ? 'Voice message' : 'Audio player'}">
+  ${coverBlock}
   <div class="nap__body">
     ${safeTitle ? `<div class="nap__title">${safeTitle}</div>` : ''}
     ${safeArtist ? `<div class="nap__artist">${safeArtist}</div>` : ''}
     <div class="nap__controls">
-      <button class="nap__play-btn" type="button" aria-label="Play">
+      <button class="nap__play-btn" type="button" aria-label="Play"${playBtnDisabled}>
         <svg class="nap__play-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
           <path class="icon-play" d="M8 5v14l11-7z"/>
           <path class="icon-pause" style="display:none" d="M6 19h4V5H6zm8-14v14h4V5z"/>
         </svg>
       </button>
       <div class="nap__progress-area">
-        <div class="nap__progress-track" role="slider" aria-label="Seek" tabindex="0" aria-valuemin="0" aria-valuemax="${durationSecs}" aria-valuenow="0">
+        <div class="nap__progress-track" role="slider" aria-label="Seek" tabindex="${src ? '0' : '-1'}"
+             aria-valuemin="0" aria-valuemax="${durationSecs}" aria-valuenow="0">
           <div class="nap__progress-fill">
             <div class="nap__progress-thumb"></div>
           </div>
@@ -471,15 +520,15 @@ function getAudio($: CheerioAPI, message: MessageSelection, options: StaticProxy
         </div>
         <div class="nap__times">
           <span class="nap__current">0:00</span>
-          <span class="nap__duration">${durationDisplay}</span>
+          <span class="nap__duration">${durationDisplay || (src ? '–:––' : 'N/A')}</span>
         </div>
       </div>
     </div>
   </div>
-  <audio class="nap__audio" src="${escapeHtmlAttribute(src)}" preload="metadata" aria-hidden="true"></audio>
+  ${audioEl}
 </div>`
 }
-
+ 
 function parseDuration(text: string | undefined): number {
   if (!text) return 0
   const parts = text.trim().split(':').map(Number)
