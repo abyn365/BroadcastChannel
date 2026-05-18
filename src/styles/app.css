@@ -1247,8 +1247,8 @@ html[data-theme='dark'] .content .image-preview-button:hover {
 .content .image-list-container.image-list-single img {
   width: 100%;
   height: auto;
-  object-fit: contain;
-  max-height: min(560px, 75vw);
+  object-fit: contain !important;
+  max-height: min(560px, 80vw);
   border-radius: 10px;
   background: rgba(0,0,0,0.03);
 }
@@ -1629,6 +1629,7 @@ html[data-theme='dark'] .content .media-video-wrap:not(.media-group__item .media
       0 8px 24px rgba(0,0,0,0.06),
       inset 0 1px 0 rgba(255,255,255,0.55);
     overflow: hidden;
+    max-height: min(680px, 70vh);
   }
 
   html[data-theme='dark'] .content .media-group {
